@@ -7,11 +7,11 @@ import { TranslateService } from '@ngx-translate/core';
 import { ConfigService } from '@geonature/services/config.service';
 import { CommonService } from '@geonature_common/service/common.service';
 
-import { DATATABLE_CONFIG } from '../../utils/constants.util';
-import { Device } from '../../models/devices.models';
-import { Deployment } from '../../models/deployments.models';
-import { Column, AccessResult } from '../../models/common.models';
-import { DevicesService } from '../../services/devices.service';
+import { DATATABLE_CONFIG } from '../../../utils/constants.util';
+import { Device } from '../../../models/devices.models';
+import { Deployment } from '../../../models/deployments.models';
+import { Column, AccessResult } from '../../../models/common.models';
+import { DevicesService } from '../../../services/devices.service';
 
 @Component({
   selector: 'gn-individuals-devices-info',

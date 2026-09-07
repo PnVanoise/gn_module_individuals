@@ -4,7 +4,6 @@ import {
   OnInit,
   OnDestroy,
   Output,
-  Input,
   EventEmitter,
 } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -13,26 +12,24 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import { ConfigService } from '@geonature/services/config.service';
 
-import { FormConstraint } from '../../models/common.models';
-import { APIIndividualFiltersParams } from '../../models/individuals.models';
-import { INDIVIDUALS_FORM_CONSTRAINTS } from '../../utils/constants.util';
+import { FormConstraint } from '../../../models/common.models';
+import { APIDeviceFiltersParams } from '../../../models/devices.models';
+import { DEVICE_FORM_CONSTRAINTS } from '../../../utils/constants.util';
 
 @Component({
-  selector: 'gn-individuals-individuals-filters',
-  templateUrl: 'individuals-filters.component.html',
-  styleUrls: ['individuals-filters.component.scss'],
+  selector: 'gn-individuals-devices-filters',
+  templateUrl: 'devices-filters.component.html',
+  styleUrls: ['devices-filters.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: false,
 })
-export class IndividualsFiltersComponent implements OnInit, OnDestroy {
+export class DevicesFiltersComponent implements OnInit, OnDestroy {
   @Output() filters = new EventEmitter<{
-    key: keyof APIIndividualFiltersParams;
+    key: keyof APIDeviceFiltersParams;
     value: string | number | undefined;
   } | null>();
-  @Input() defaultValues: APIIndividualFiltersParams = {};
-
   public filtersForm!: FormGroup;
-  public formConstraints: Record<string, FormConstraint> = INDIVIDUALS_FORM_CONSTRAINTS;
+  public formConstraints: Record<string, FormConstraint> = DEVICE_FORM_CONSTRAINTS;
   public taxonListId: string = this._config.INDIVIDUALS.GLOBAL.ID_TAXON_LIST;
   private _destroy$ = new Subject<void>();
 
@@ -44,10 +41,10 @@ export class IndividualsFiltersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Form initialization
     this.filtersForm = this._fb.group({
-      active: [this.defaultValues?.active, null],
       cd_nom: [null, null],
-      id_nomenclature_sex: [null, null],
-      individual_name: [null, [Validators.pattern(this.formConstraints.individual_name.pattern)]],
+      id_nomenclature_device_type: [null, null],
+      provider_name: [null, [Validators.pattern(this.formConstraints.provider_name.pattern)]],
+      id_referer: [null, null],
     });
 
     // Call API on change event
@@ -66,10 +63,11 @@ export class IndividualsFiltersComponent implements OnInit, OnDestroy {
             return;
           }
 
-          // Emit to IndividualsMapList :
+          // Emit to IndividualsMapList
           // If the value comes from pnx-taxonomy, get the value.cd_nom
+          // If the value comes from pnx-observers, get the value.id_role
           // Else get the value
-          this.filters.emit({ key: field, value: value?.cd_nom ?? value });
+          this.filters.emit({ key: field, value: value?.id_role ?? value?.cd_nom ?? value });
         });
     });
   }

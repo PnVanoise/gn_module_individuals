@@ -27,10 +27,10 @@ import { InputRadioComponent } from './components/input/input-radio.component';
 
 import { DevicesService } from './services/devices.service';
 import { DevicesResolver, DeviceResolver } from './resolvers/devices.resolver';
-import { DevicesListComponent } from './components/devices-list/devices-list.component';
-import { DevicesFiltersComponent } from './components/devices-list/devices-filters.component';
-import { DevicesFormComponent } from './components/devices-form/devices-form.component';
-import { DevicesInfoComponent } from './components/devices-info/devices-info.component';
+import { DevicesListComponent } from './components/devices/list/devices-list.component';
+import { DevicesFiltersComponent } from './components/devices/list/devices-filters.component';
+import { DevicesFormComponent } from './components/devices/form/devices-form.component';
+import { DevicesInfoComponent } from './components/devices/info/devices-info.component';
 
 import { IndividualsService } from './services/individuals.service';
 import {
@@ -38,10 +38,10 @@ import {
   IndividualsResolver,
   IndividualResolver,
 } from './resolvers/individuals.resolver';
-import { IndividualsMapListComponent } from './components/individuals-map-list/individuals-map-list.component';
-import { IndividualsFiltersComponent } from './components/individuals-map-list/individuals-filters.component';
-import { IndividualsInfoComponent } from './components/individuals-info/individuals-info.component';
-import { IndividualsFormComponent } from './components/individuals-form/individuals-form.component';
+import { IndividualsMapListComponent } from './components/individuals/map-list/individuals-map-list.component';
+import { IndividualsFiltersComponent } from './components/individuals/map-list/individuals-filters.component';
+import { IndividualsInfoComponent } from './components/individuals/info/individuals-info.component';
+import { IndividualsFormComponent } from './components/individuals/form/individuals-form.component';
 
 import { DeploymentsService } from './services/deployments.service';
 import { DeploymentsFormComponent } from './components/deployments-form/deployments-form.component';

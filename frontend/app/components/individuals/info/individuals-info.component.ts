@@ -10,15 +10,15 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfigService } from '@geonature/services/config.service';
 import { CommonService } from '@geonature_common/service/common.service';
 
-import { DATATABLE_CONFIG } from '../../utils/constants.util';
-import { Individual } from '../../models/individuals.models';
-import { DEPLOYMENT_MODEL, Deployment } from '../../models/deployments.models';
-import { AccessResult, ItemCollection, DatatableColumnLink } from '../../models/common.models';
-import { ModalComponent } from '../modal/modal.component'
-import { IndividualsService } from '../../services/individuals.service';
-import { DeploymentsService } from '../../services/deployments.service';
-import { DeploymentsFormComponent } from '../deployments-form/deployments-form.component';
-;
+import { DATATABLE_CONFIG } from '../../../utils/constants.util';
+import { Individual } from '../../../models/individuals.models';
+import { DEPLOYMENT_MODEL, Deployment } from '../../../models/deployments.models';
+import { AccessResult, ItemCollection, DatatableColumnLink } from '../../../models/common.models';
+import { ModalComponent } from '../../modal/modal.component'
+import { IndividualsService } from '../../../services/individuals.service';
+import { DeploymentsService } from '../../../services/deployments.service';
+import { DeploymentsFormComponent } from '../../deployments-form/deployments-form.component';
+
 @Component({
   selector: 'gn-individuals-individuals-info',
   templateUrl: 'individuals-info.component.html',
@@ -28,9 +28,9 @@ import { DeploymentsFormComponent } from '../deployments-form/deployments-form.c
   standalone: false,
 })
 export class IndividualsInfoComponent implements OnInit {
-  public dataTable$: Observable<Individual> = new Observable<Individual>();
-  private _dataTable_deployments$ = new BehaviorSubject<ItemCollection<Deployment> | null>(null);
-  public dataTable_deployments$: Observable<ItemCollection<Deployment>> = this._dataTable_deployments$.pipe(
+  public datatable!: Individual;
+  private _datatable_deployments$ = new BehaviorSubject<ItemCollection<Deployment> | null>(null);
+  public datatable_deployments$: Observable<ItemCollection<Deployment>> = this._datatable_deployments$.pipe(
     filter((data): data is ItemCollection<Deployment> => data !== null)
   );
 
@@ -67,18 +67,30 @@ export class IndividualsInfoComponent implements OnInit {
   ngOnInit(): void {
     // Resolver : First initialisation of the datatable and additional fields
     this._route.data.pipe(takeUntil(this._destroy$)).subscribe(({ datatable, additionalFields }) => {
-      this.dataTable$ = of(datatable);
+      this.datatable = datatable;
       this.additionalFields = additionalFields ?? [];
 
       // If they're deployments to display, create and ItemCollection for 
       // the ListComponent
-      this._dataTable_deployments$.next({
+      this._datatable_deployments$.next({
         items: Object.values(datatable?.deployments ?? {})
       });
 
       this._individualId = datatable.id_individual;
       this._setPermissions(datatable);
     });
+
+    // To be sure to wait translations before setting permissions
+    this._translate
+      .get([
+        'Individuals.ApiErrors.InsufficientPermissions',
+        'Individuals.ApiErrors.HasObservation',
+        'Individuals.ApiErrors.HasDeployment'
+      ])
+      .subscribe(() => {
+        this._setPermissions(this.datatable);
+      });
+
     this.defaultLang = this._config['DEFAULT_LANGUAGE'];
   }
 
@@ -140,7 +152,7 @@ export class IndividualsInfoComponent implements OnInit {
         tap((data) => this._setPermissions(data)),
         takeUntil(this._destroy$)
       )
-      .subscribe((data) => this._dataTable_deployments$.next(
+      .subscribe((data) => this._datatable_deployments$.next(
         data.deployments ? 
           { items: Object.values(data.deployments) } : 
           { items: [] }
@@ -155,22 +167,38 @@ export class IndividualsInfoComponent implements OnInit {
    * @memberof IndividualsInfoComponent
    */
   private _setPermissions(datatable: Individual) {
-    this.allowedToEdit = { id: datatable.id_individual, access: true };
-    this.allowedToDelete = { id: datatable.id_individual, access: true };
-    this.allowedToChangeDeployments = {};
+    // Edit Access
+    this.allowedToEdit = { 
+      id: datatable.id_individual, 
+      access: datatable.cruved?.U ?? false,
+      message: datatable.cruved?.U ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions')
+    };
 
-    this.allowedToDelete.access = datatable.cruved?.D;
-    this.allowedToDelete.message = this.allowedToDelete.access
-      ? null
-      : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
+    // Deployment access rights are the same as the individual edit access rights
+    this.allowedToChangeDeployments = {};
+    datatable.deployments?.forEach((deployment: Deployment) => {
+      // Edit and delete deployment actions have the same access rights
+      // of the individual 
+      this.allowedToChangeDeployments[deployment.id_deployment] = {
+        ...this.allowedToEdit,
+        id: deployment.id_deployment,
+      };
+    });
 
     // Delete access
-    if (this.allowedToDelete.access) {
-      // Check if individual has observations, if yes : no access
+    this.allowedToDelete = { 
+      id: datatable.id_individual, 
+      access: datatable.cruved?.D ?? false,
+      message: datatable.cruved?.D ?? false ? null : this._translate.instant(
+        'Individuals.ApiErrors.InsufficientPermissions'
+      )
+    };
+    // Check if individual has observations, if yes : no access
+    if (this.allowedToDelete) {
       if (datatable.last_observation_date) {
         this.allowedToDelete.access = false;
         this.allowedToDelete.message = this._translate.instant(
-          'Individuals.ApiErrors.HasObservation'
+            'Individuals.ApiErrors.HasObservation'
         );
       }
       // Check if individual has deployments, if yes : no access
@@ -181,20 +209,5 @@ export class IndividualsInfoComponent implements OnInit {
         );
       }
     }
-
-    // Edit Access 
-    this.allowedToEdit.access = datatable.cruved?.U ?? false;
-    this.allowedToEdit.message = this.allowedToEdit.access
-      ? null
-      : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
-
-    datatable.deployments?.forEach((deployment: Deployment) => {
-      // Edit and delete deployment actions have the same access rights
-      // of the individual 
-      this.allowedToChangeDeployments[deployment.id_deployment] = {
-        ...this.allowedToEdit,
-        id: deployment.id_deployment,
-      };
-    });
   }
 }

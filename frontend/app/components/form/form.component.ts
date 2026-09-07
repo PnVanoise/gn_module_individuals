@@ -27,7 +27,7 @@ export class FormComponent implements OnInit, AfterViewInit {
   @Input() formTemplate!: TemplateRef<any>;
   @Input() formTitle: string = '';
   @Input() formAction: string = '';
-  @Input() allowedToSave: AccessResult = { id: 0, access: true };
+  @Input() allowedToSave: AccessResult = { id: 0, access: false, message: null };
 
   constructor(
     public config: ConfigService,

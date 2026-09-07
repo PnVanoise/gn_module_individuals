@@ -5,11 +5,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import { CommonService } from '@geonature_common/service/common.service';
 
-import { ErrorHandlerService } from '../../services/errors-handler.service';
-import { Device } from '../../models/devices.models';
-import { FormConstraint } from '../../models/common.models';
-import { DEVICE_FORM_CONSTRAINTS } from '../../utils/constants.util';
-import { DevicesService } from '../../services/devices.service';
+import { ErrorHandlerService } from '../../../services/errors-handler.service';
+import { FormConstraint } from '../../../models/common.models';
+import { DEVICE_FORM_CONSTRAINTS } from '../../../utils/constants.util';
+import { DevicesService } from '../../../services/devices.service';
 
 @Component({
   selector: 'gn-individuals-devices-form',

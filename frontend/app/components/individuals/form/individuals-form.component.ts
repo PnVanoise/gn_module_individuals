@@ -5,22 +5,21 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subject, BehaviorSubject, Observable } from 'rxjs';
 import { takeUntil, tap, filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ModuleService } from '@geonature/services/module.service';
 import { CommonService } from '@geonature_common/service/common.service';
 import { ConfigService } from '@geonature/services/config.service';
 
-import { ErrorHandlerService } from '../../services/errors-handler.service';
-import { Individual } from '../../models/individuals.models';
-import { DEPLOYMENT_MODEL, Deployment } from '../../models/deployments.models';
-import { FormConstraint, ItemCollection, DatatableColumnLink, AccessResult } from '../../models/common.models';
-import { INDIVIDUALS_FORM_CONSTRAINTS } from '../../utils/constants.util';
-import { IndividualsService } from '../../services/individuals.service';
-import { DeploymentsService } from '../../services/deployments.service';
-import { ModalComponent } from '../modal/modal.component'
-import { DeploymentsFormComponent } from '../deployments-form/deployments-form.component';
+import { ErrorHandlerService } from '../../../services/errors-handler.service';
+import { Individual } from '../../../models/individuals.models';
+import { DEPLOYMENT_MODEL, Deployment } from '../../../models/deployments.models';
+import { FormConstraint, ItemCollection, DatatableColumnLink, AccessResult } from '../../../models/common.models';
+import { INDIVIDUALS_FORM_CONSTRAINTS } from '../../../utils/constants.util';
+import { IndividualsService } from '../../../services/individuals.service';
+import { DeploymentsService } from '../../../services/deployments.service';
+import { ModalComponent } from '../../modal/modal.component'
+import { DeploymentsFormComponent } from '../../deployments-form/deployments-form.component';
 ;
 @Component({
   selector: 'gn-individuals-individuals-form',
@@ -49,8 +48,9 @@ export class IndividualsFormComponent implements OnInit {
       id_field_name: "id_tracking_device" 
     }
   ]
-  public allowedToSave!: AccessResult;
+  public allowedToSave: AccessResult = { id: 0, access: false, message: null };
   public allowedToChangeDeployments: Record<number, AccessResult> = {};
+  public objectValues = Object.values;
 
   constructor(
     private _route: ActivatedRoute,
@@ -62,7 +62,7 @@ export class IndividualsFormComponent implements OnInit {
     private _service: IndividualsService,
     private _location: Location,
     private _errorHandler: ErrorHandlerService,
-    public moduleService: ModuleService,
+    private _module: ModuleService,
     public _deploymentsService: DeploymentsService,
     private _modalService: NgbModal,
   ) {}
@@ -109,9 +109,18 @@ export class IndividualsFormComponent implements OnInit {
       this._dataTable_deployments$.next({
         items: Object.values(datatable?.deployments ?? {})
       });
-
-      this._setPermissions(datatable);
     });
+
+    // To be sure to wait translations before setting permissions
+    this._translate
+      .get([
+        'Individuals.ApiErrors.InsufficientPermissions',
+        'Individuals.Errors.FormInvalid',
+        'Individuals.Errors.FormNotModified',
+      ])
+      .subscribe(() => {
+        this._setPermissions(this.datatable);
+      });
 
     this.form.valueChanges.subscribe(() => {
       this._setPermissions(this.datatable);
@@ -130,6 +139,7 @@ export class IndividualsFormComponent implements OnInit {
     modalRef.componentInstance.validateButtonType = null;
     modalRef.result.then(() => {
       this._loadDeploymentData();
+      this.form.markAsDirty();
     });
   }
 
@@ -153,17 +163,19 @@ export class IndividualsFormComponent implements OnInit {
 
   patchForm(individual: any): void {
     /// Modifier par : Device au lieu de any et faire le mapping si besoin
-    this.form.patchValue(individual);
-    this.form.patchValue({
-      // En attendant la correction de l'API
-      cd_nom: { cd_nom: individual.cd_nom, nom_valide: individual.nom_vern },
-      id_nomenclature_sex: individual.nomenclature_sex.id_nomenclature,
-    });
+    this.form.patchValue(individual,{ emitEvent: false });
+    this.form.patchValue(
+      {
+        // En attendant la correction de l'API
+        cd_nom: { cd_nom: individual.cd_nom, nom_valide: individual.nom_vern },
+        id_nomenclature_sex: individual.nomenclature_sex.id_nomenclature,
+      },
+      { emitEvent: false }
+    );
   }
 
   onSave(): void {
     let individual = this.form.getRawValue();
-    // individual = this.formToJson(individual);
 
     this._service
       .createOrUpdateIndividual(individual, this.formAction)
@@ -206,37 +218,57 @@ export class IndividualsFormComponent implements OnInit {
   }
 
   /**
-   * Set edit and delete permissions
+   * Set save and edit deployments permissions
    *
    * @private
    * @param {Individual} datatable
-   * @memberof IndividualsInfoComponent
+   * @memberof IndividualsFormComponent
    */
-  private _setPermissions(datatable: Individual) {
-    this.allowedToSave = { id: datatable.id_individual, access: true };
-    this.allowedToChangeDeployments = {};
-    console.log(this.form.valid, this.form.dirty, datatable.cruved?.U);
-    // Edit Access 
-    if (datatable.cruved?.U === false) {
-      this.allowedToSave.access = datatable.cruved?.U ?? false;
-      this.allowedToSave.message = this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
+  private _setPermissions(datatable: Individual): void {
+    // Save Access 
+    if (datatable) {
+      // Edit mode
+      this.allowedToSave = { 
+        id: datatable.id_individual? datatable.id_individual : 0, 
+        access: datatable.cruved?.U ?? false, 
+        message: datatable.cruved?.U ?? false ? null : this._translate.instant(
+          'Individuals.ApiErrors.InsufficientPermissions'
+        )
+      };
     }
-    else if (!this.form.valid) {
-      this.allowedToSave.access = false;
-      this.allowedToSave.message = this._translate.instant('Individuals.Errors.FormInvalid');
-    }
-    else if (this.formAction === 'EDIT' && !this.form.dirty) {
-      this.allowedToSave.access = false;
-      this.allowedToSave.message = this._translate.instant('Individuals.Errors.FormNotModified');
+    else {
+      // Add mode
+      const currentObject = this._module.currentModule.module_objects['INDIVIDUALS'];
+      this.allowedToSave = {
+        id: 0,
+        access: currentObject?.cruved?.C ?? false,
+        message: currentObject?.cruved?.C ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions'),
+      };
     }
 
-    datatable.deployments?.forEach((deployment: Deployment) => {
-      // Edit and delete deployment actions have the same access rights
-      // of the individual 
-      this.allowedToChangeDeployments[deployment.id_deployment] = {
-        ...this.allowedToSave,
-        id: deployment.id_deployment,
-      };
-    });
+    if (this.allowedToSave.access) {
+      if (!this.form.valid) {
+        this.allowedToSave.access = false;
+        this.allowedToSave.message = this._translate.instant('Individuals.Errors.FormInvalid');
+      }
+      else if (this.formAction === 'EDIT' && !this.form.dirty) {
+        this.allowedToSave.access = false;
+        this.allowedToSave.message = this._translate.instant('Individuals.Errors.FormNotModified');
+      }
+    }
+
+    // Edit mode : Deployment access rights are the same as the individual edit access rights
+    if (datatable) {
+      this.allowedToChangeDeployments = {};
+      datatable.deployments?.forEach((deployment: Deployment) => {
+        // Edit and delete deployment actions have the same access rights
+        // of the individual 
+        this.allowedToChangeDeployments[deployment.id_deployment] = {
+          id: deployment.id_deployment,
+          access: datatable.cruved?.U ?? false,
+          message: datatable.cruved?.U ?? false ? this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') : null
+        };
+      });
+    }
   }
 }

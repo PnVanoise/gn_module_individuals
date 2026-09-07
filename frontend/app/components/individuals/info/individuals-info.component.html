@@ -26,31 +26,31 @@
 <!-- INFO TEMPLATE -->
 <ng-template
   #infoTemplate
-  let-dataTable="dataTable"
+  let-datatable="datatable"
 >
   <div class="content row">
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.individual_name' | translate }}</h3>
       <p>
-        {{ dataTable['individual_name'] }}
+        {{ datatable['individual_name'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.taxref_nom_vern' | translate }}</h3>
-      <p>{{ dataTable['nom_vern'] }} ( {{ dataTable['lb_nom'] }})</p>
+      <p>{{ datatable['nom_vern'] }} ( {{ datatable['lb_nom'] }})</p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">
         {{ 'Individuals.Individuals.Fields.nomenclature_sex_name' | translate }}
       </h3>
       <p>
-        {{ dataTable['nomenclature_sex']?.['label_' + defaultLang] }}
+        {{ datatable['nomenclature_sex']?.['label_' + defaultLang] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.comment' | translate }}</h3>
       <p>
-        {{ dataTable['comment'] ?? '-' }}
+        {{ datatable['comment'] ?? '-' }}
       </p>
     </div>
   </div>
@@ -65,7 +65,7 @@
           [idFieldName]="'id_deployment'"
           [displayedColumnsParams]="displayedDeploymentsColumnsParams"
           [availableColumnsParams]="availableDeploymentsColumnsParams"
-          [dataTable$]="dataTable_deployments$"
+          [dataTable$]="datatable_deployments$"
           [fieldsTranslation]="'Individuals.Deployments.Fields'"
           [contentHeight]="null"
           [datatableColumnsLink]="datatableColumnsLink"
@@ -76,7 +76,7 @@
           [displayFilterButton]="false"
           [displayExportButton]="false"
           [displayInfoButtons]="false"
-          (add)="addOrEditDeployment({ id_individual: dataTable.id_individual })"
+          (add)="addOrEditDeployment({ id_individual: datatable.id_individual })"
           (edit)="addOrEditDeployment($event)"
           (delete)="deleteDeployment($event.id_deployment)"
         ></gn-individuals-list>
@@ -87,7 +87,7 @@
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.digitiser_name' | translate }}</h3>
       <p>
-        {{ dataTable['digitiser']?.['nom_complet'] }}
+        {{ datatable['digitiser']?.['nom_complet'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
@@ -95,7 +95,7 @@
         {{ 'Individuals.Individuals.Fields.meta_create_date' | translate }}
       </h3>
       <p>
-        {{ dataTable['meta_create_date'] }}
+        {{ datatable['meta_create_date'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
@@ -103,7 +103,7 @@
         {{ 'Individuals.Individuals.Fields.meta_update_date' | translate }}
       </h3>
       <p>
-        {{ dataTable['meta_update_date'] ?? '-' }}
+        {{ datatable['meta_update_date'] ?? '-' }}
       </p>
     </div>
   </div>
@@ -113,17 +113,16 @@
     *ngFor="let additionalField of additionalFields"
   >
     <b>{{ additionalField.attribut_label }} :</b>
-    {{ dataTable['additional_data'][additionalField.attribut_name] }}
+    {{ datatable['additional_data'][additionalField.attribut_name] }}
   </div>
 </ng-template>
 
 <gn-individuals-info
-  *ngIf="dataTable$ | async as dataTable"
   [infoTemplate]="infoTemplate"
-  [dataTable]="dataTable"
-  [infoTitle]="'Individuals.Individuals.Titles.Info' | translate: { id: dataTable.id_individual }"
+  [datatable]="datatable"
+  [infoTitle]="'Individuals.Individuals.Titles.Info' | translate: { id: datatable.id_individual }"
   [objectName]="'individuals'"
-  [objectId]="dataTable.id_individual"
+  [objectId]="datatable.id_individual"
   [allowedToEdit]="allowedToEdit"
   [allowedToDelete]="allowedToDelete"
   (delete)="onDelete()"

@@ -2,16 +2,21 @@
 <!-- <div> -->
   <div class="action-buttons" *ngIf="displayAddButton || displayFilterButton || displayExportButton">
     <ng-container *ngIf="displayAddButton">
-      <button
-        id="add"
-        mat-mini-fab
-        [matTooltip]="'Individuals.Actions.Add' | translate"
-        class="custom-mini-fab mr-1 bg-primary text-white border-0"
-        (click)="onAdd()"
-        [disabled]="false"
+      <span 
+        [matTooltip]="allowedToAdd?.message ?? ('Individuals.Actions.Add' | translate)"
+        [class.cursor-not-allowed]="!allowedToAdd.access"
       >
-        <mat-icon>add</mat-icon>
-      </button>
+        <button
+          id="add"
+          mat-mini-fab
+          [matTooltip]="'Individuals.Actions.Add' | translate"
+          class="custom-mini-fab mr-1 bg-primary text-white border-0"
+          (click)="onAdd()"
+          [disabled]="!allowedToAdd.access"
+        >
+          <mat-icon>add</mat-icon>
+        </button>
+      </span>
     </ng-container>
     <ng-container *ngIf="displayFilterButton">
       <button

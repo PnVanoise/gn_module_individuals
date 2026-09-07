@@ -15,9 +15,8 @@
         <mat-icon>close</mat-icon>
       </button>
       <span
-        [matTooltip]="
-          allowedToSave.message ?? ('Individuals.Actions.Save' | translate)
-        "
+        [matTooltip]="allowedToSave.message ?? ('Individuals.Actions.Save' | translate)"
+        [class.cursor-not-allowed]="!allowedToSave.access"
       >
         <button
           mat-mini-fab

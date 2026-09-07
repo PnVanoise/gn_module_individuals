@@ -8,17 +8,17 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ConfigService } from '@geonature/services/config.service';
 import { CommonService } from '@geonature_common/service/common.service';
 
-import { ErrorHandlerService } from '../../services/errors-handler.service';
-import { Device, APIDeviceFiltersParams, DEVICE_MODEL } from '../../models/devices.models';
+import { ErrorHandlerService } from '../../../services/errors-handler.service';
+import { Device, APIDeviceFiltersParams, DEVICE_MODEL } from '../../../models/devices.models';
 import {
   Sort,
   PaginatedItemCollection,
   APIPaginationParams,
   AccessResult,
-} from '../../models/common.models';
-import { DevicesService } from '../../services/devices.service';
-import { DEVICES_DEFAULT_SORT, DATATABLE_CONFIG } from '../../utils/constants.util';
-import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
+} from '../../../models/common.models';
+import { DevicesService } from '../../../services/devices.service';
+import { DEVICES_DEFAULT_SORT, DATATABLE_CONFIG } from '../../../utils/constants.util';
+import { DeleteModalComponent } from '../../delete-modal/delete-modal.component';
 
 @Component({
   selector: 'gn-individuals-devices-list',
@@ -211,7 +211,7 @@ export class DevicesListComponent implements OnInit, OnDestroy {
     if (data.items) {
       data.items.forEach((item: Device) => {
         // Delete access
-        let deleteAccess: AccessResult = { id: item.id_tracking_device, access: true };
+        let deleteAccess: AccessResult = { id: item.id_tracking_device, access: false, message: null };
 
         deleteAccess.access = item.cruved?.D ?? false;
         deleteAccess.message = deleteAccess.access
@@ -227,7 +227,7 @@ export class DevicesListComponent implements OnInit, OnDestroy {
         }
 
         // Edit access
-        let editAccess: AccessResult = { id: item.id_tracking_device, access: true };
+        let editAccess: AccessResult = { id: item.id_tracking_device, access: false, message: null };
 
         editAccess.access = item.cruved?.U ?? false;
         editAccess.message = editAccess.access

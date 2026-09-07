@@ -7,23 +7,24 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { ConfigService } from '@geonature/services/config.service';
 import { CommonService } from '@geonature_common/service/common.service';
+import { ModuleService } from '@geonature/services/module.service';
 
-import { ErrorHandlerService } from '../../services/errors-handler.service';
+import { ErrorHandlerService } from '../../../services/errors-handler.service';
 import {
   Individual,
   INDIVIDUAL_MODEL,
   APIIndividualFiltersParams,
-} from '../../models/individuals.models';
+} from '../../../models/individuals.models';
 import {
   Sort,
   PaginatedItemCollection,
   APIPaginationParams,
   FeatureCollection,
   AccessResult,
-} from '../../models/common.models';
-import { IndividualsService } from '../../services/individuals.service';
-import { INDIVIDUALS_DEFAULT_SORT, DATATABLE_CONFIG } from '../../utils/constants.util';
-import { DeleteModalComponent } from '../delete-modal/delete-modal.component';
+} from '../../../models/common.models';
+import { IndividualsService } from '../../../services/individuals.service';
+import { INDIVIDUALS_DEFAULT_SORT, DATATABLE_CONFIG } from '../../../utils/constants.util';
+import { DeleteModalComponent } from '../../delete-modal/delete-modal.component';
 
 @Component({
   selector: 'gn-individuals-individuals-map-list',
@@ -38,10 +39,12 @@ export class IndividualsMapListComponent implements OnInit, OnDestroy {
   public datatable$: Observable<PaginatedItemCollection<Individual>> = this._datatable$.pipe(
     filter((data): data is PaginatedItemCollection<Individual> => data !== null)
   );
+  private _datatable!: PaginatedItemCollection<Individual>;
   public nbRowsToDisplay =
     this._config.INDIVIDUALS?.INDIVIDUALS?.DEFAULT_PAGE_SIZE ?? DATATABLE_CONFIG.PER_PAGE_OPTION;
   public fieldsTranslation = 'Individuals.Individuals.Fields';
   public sorts: Array<Sort> = [INDIVIDUALS_DEFAULT_SORT];
+  public allowedToAdd: AccessResult = { id: 0, access: false, message: null };
   public allowedToEdit: Record<number, AccessResult> = {};
   public allowedToDelete: Record<number, AccessResult> = {};
   public selectedRows: Individual[] = [];
@@ -63,6 +66,7 @@ export class IndividualsMapListComponent implements OnInit, OnDestroy {
     private _config: ConfigService,
     private _individualsService: IndividualsService,
     private _commonService: CommonService,
+    private _module: ModuleService,
     private _activatedRoute: ActivatedRoute,
     private _router: Router,
     private _ngbModal: NgbModal,
@@ -75,9 +79,25 @@ export class IndividualsMapListComponent implements OnInit, OnDestroy {
     this._activatedRoute.data
       .pipe(takeUntil(this._destroy$))
       .subscribe(({ datatable, mapData }) => {
+        this._datatable = datatable;
         this._datatable$.next(datatable);
         this.mapData$ = of(mapData);
         this._setPermissions(datatable);
+      });
+
+    // To be sure to wait translations before setting permissions
+    this._translate
+      .get([
+        'Individuals.Individuals.Titles.Delete',
+        'Individuals.Individuals.Fields.individual_name',
+        'Individuals.Individuals.Fields.taxref_nom_vern',
+        'Individuals.Individuals.Fields.nomenclature_sex_name',
+        'Individuals.ApiErrors.InsufficientPermissions',
+        'Individuals.ApiErrors.HasObservation',
+        'Individuals.ApiErrors.HasDeployment'
+      ])
+      .subscribe(() => {
+        this._setPermissions(this._datatable);
       });
 
     this.defaultFilters = this._APIFiltersParams;
@@ -262,52 +282,64 @@ export class IndividualsMapListComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Set the allowToDelete and allowToEdit variables considering the item cruved.
-   * Else, for each item id, if a deployment or observation exists
+   * Set the allowToDelete, allowToEdit and allowToAdd variables considering the item cruved or object cruved
+   * 
+   * For each item id, if a deployment or observation exists
    * set the corresponding array entry to false, else to true
    *
    * @private
    * @param {PaginatedItemCollection<Individual>} data
    * @memberof IndividualsMapListComponent
    */
-  private _setPermissions(data: PaginatedItemCollection<Individual>): void {
-    if (data.items) {
-      data.items.forEach((item: Individual) => {
+  private _setPermissions(datatable: PaginatedItemCollection<Individual>): void {
+    if (datatable.items) {
+      this.allowedToDelete = {};
+      this.allowedToEdit = {};
+
+      // Add access
+      const currentObject = this._module.currentModule.module_objects['INDIVIDUALS'];
+      this.allowedToAdd = {
+        id: 0,
+        access: currentObject?.cruved?.C ?? false,
+        message: currentObject?.cruved?.C ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions'),
+      };
+
+      datatable.items.forEach((item: Individual) => {
+        // Edit access
+        this.allowedToEdit[item.id_individual] = { 
+          id: item.id_individual, 
+          access: item.cruved?.U ?? false, 
+          message: item.cruved?.U ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') 
+        };
+
         // Delete access
-        let deleteAccess: AccessResult = { id: item.id_individual, access: true };
+         this.allowedToDelete[item.id_individual] = { 
+          id: item.id_individual, 
+          access: item.cruved?.D ?? false, 
+          message: item.cruved?.D ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') 
+        };
 
-        deleteAccess.access = item.cruved?.D ?? false;
-        deleteAccess.message = deleteAccess.access
-          ? null
-          : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
-
-        if (deleteAccess.access) {
+        if (this.allowedToDelete[item.id_individual].access) {
           // Not allowed to delete if deployments exists
           if (item.last_observation_date) {
-            deleteAccess.access = false;
-            deleteAccess.message = this._translate.instant('Individuals.ApiErrors.HasObservation');
+            this.allowedToDelete[item.id_individual].access = false;
+            this.allowedToDelete[item.id_individual].message = this._translate.instant('Individuals.ApiErrors.HasObservation');
           }
           // Not Allowed to delete if observations exists
           else if (
             Object.keys(item.deployed_devices).length > 0 ||
             Object.keys(item.deployed_markings).length > 0
           ) {
-            deleteAccess.access = false;
-            deleteAccess.message = this._translate.instant('Individuals.ApiErrors.HasDeployment');
+            this.allowedToDelete[item.id_individual].access = false;
+            this.allowedToDelete[item.id_individual].message = this._translate.instant('Individuals.ApiErrors.HasDeployment');
           }
         }
-
-        // Edit access
-        let editAccess: AccessResult = { id: item.id_individual, access: true };
-
-        editAccess.access = item.cruved?.D ?? false;
-        editAccess.message = editAccess.access
-          ? null
-          : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
-
-        this.allowedToDelete[item.id_individual] = deleteAccess;
-        this.allowedToEdit[item.id_individual] = editAccess;
       });
+      this.allowedToEdit[28] = { 
+        id: 28, 
+        access: false, 
+        message: this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') 
+      };
     }
   }
 }

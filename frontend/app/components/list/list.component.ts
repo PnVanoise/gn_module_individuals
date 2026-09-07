@@ -53,6 +53,7 @@ export class ListComponent implements OnInit {
   @Input() sorts: Array<Object> = [];
   @Input() allowedToEdit: Record<number, AccessResult> = {};
   @Input() allowedToDelete: Record<number, AccessResult> = {};
+  @Input() allowedToAdd: AccessResult = { id: 0, access: false, message: null };
   @Input() summaryTemplate!: TemplateRef<any>;
   @Input() filtersTemplate!: TemplateRef<any>;
   @Input() selectedRows: unknown[] = [];
