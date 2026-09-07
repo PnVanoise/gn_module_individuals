@@ -45,7 +45,7 @@ export class ModalComponent {
    * Define the validate button tag
    *
    * @type {('delete' | 'save')}
-   * @memberof DeleteModalComponent
+   * @memberof ModalComponent
    */
   @Input() validateButtonType: 'delete' | 'save' | null = null;
 

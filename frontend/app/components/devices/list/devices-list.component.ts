@@ -19,7 +19,7 @@ import {
 } from '../../../models/common.models';
 import { DevicesService } from '../../../services/devices.service';
 import { DEVICES_DEFAULT_SORT, DATATABLE_CONFIG } from '../../../utils/constants.util';
-import { DeleteModalComponent } from '../../delete-modal/delete-modal.component';
+import { ModalComponent } from '../../modal/modal.component';
 
 @Component({
   selector: 'gn-individuals-devices-list',
@@ -150,20 +150,19 @@ export class DevicesListComponent implements OnInit, OnDestroy {
    */
   openDeleteModal($event: any) {
     this.selectedRow = $event;
-    const modalRef = this._ngbModal.open(DeleteModalComponent);
+    const modalRef = this._ngbModal.open(ModalComponent);
 
     modalRef.componentInstance.title = this._translate.instant(
       'Individuals.Devices.Titles.Delete',
       { id: this.selectedRow.id_tracking_device }
     );
-
-    modalRef.componentInstance.body = `
+    modalRef.componentInstance.bodyHTML = `
       ${this._translate.instant('Individuals.Devices.Fields.provider_name')} : ${this.selectedRow.provider_name}<br>
       ${this._translate.instant('Individuals.Devices.Fields.provider_device_id')} : ${this.selectedRow.provider_device_id}
     `;
-
-    modalRef.componentInstance.confirm.subscribe((id: number) => {
-      this.onDelete();
+    modalRef.componentInstance.validateButtonType = 'delete';
+    modalRef.componentInstance.validate.subscribe((id: number) => {
+      this._onDelete();
     });
   }
 
@@ -181,7 +180,7 @@ export class DevicesListComponent implements OnInit, OnDestroy {
     this._loadData();
   }
 
-  onDelete(): void {
+  private _onDelete(): void {
     if (this.selectedRow) {
       const selectedId = this.selectedRow.id_tracking_device;
       this._devicesService.deleteDevice(selectedId).subscribe({

@@ -1,7 +1,6 @@
 import { ViewEncapsulation, Component, OnInit } from '@angular/core';
-import { Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
-import { Observable, of, forkJoin } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { TranslateService } from '@ngx-translate/core';
 
 import { ConfigService } from '@geonature/services/config.service';
@@ -33,6 +32,7 @@ export class DevicesInfoComponent implements OnInit {
     private _config: ConfigService,
     private _commonService: CommonService,
     private _route: ActivatedRoute,
+    private _router: Router,
     private _translate: TranslateService,
     private _service: DevicesService,
     private _location: Location
@@ -79,7 +79,7 @@ export class DevicesInfoComponent implements OnInit {
         this._commonService.translateToaster('info', 'Individuals.Devices.Messages.Deleted', {
           id: this._deviceId,
         });
-        this._location.back();
+        this._router.navigate(['/individuals/devices'])
       },
       error: (err) => {
         const msg = err.name + ':' + err.message || JSON.stringify(err);

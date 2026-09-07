@@ -1,6 +1,5 @@
 import { ViewEncapsulation, Component, OnInit } from '@angular/core';
-import { Location } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, BehaviorSubject, Observable, of } from 'rxjs';
 import { takeUntil, tap, filter } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
@@ -18,6 +17,7 @@ import { ModalComponent } from '../../modal/modal.component'
 import { IndividualsService } from '../../../services/individuals.service';
 import { DeploymentsService } from '../../../services/deployments.service';
 import { DeploymentsFormComponent } from '../../deployments-form/deployments-form.component';
+
 
 @Component({
   selector: 'gn-individuals-individuals-info',
@@ -56,9 +56,9 @@ export class IndividualsInfoComponent implements OnInit {
     private _config: ConfigService,
     private _commonService: CommonService,
     private _route: ActivatedRoute,
+    private _router: Router,
     private _translate: TranslateService,
     private _service: IndividualsService,
-    private _location: Location,
     private _modalService: NgbModal,
     private _individualsService: IndividualsService,
     private _deploymentsService: DeploymentsService
@@ -133,7 +133,7 @@ export class IndividualsInfoComponent implements OnInit {
         this._commonService.translateToaster('info', 'Individuals.Individuals.Messages.Deleted', {
           id: this._individualId,
         });
-        this._location.back();
+        this._router.navigate(['/individuals/individuals']);
       },
       error: (err) => {
         const msg = err.name + ':' + err.message || JSON.stringify(err);

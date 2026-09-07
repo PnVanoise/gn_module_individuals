@@ -24,7 +24,8 @@ import {
 } from '../../../models/common.models';
 import { IndividualsService } from '../../../services/individuals.service';
 import { INDIVIDUALS_DEFAULT_SORT, DATATABLE_CONFIG } from '../../../utils/constants.util';
-import { DeleteModalComponent } from '../../delete-modal/delete-modal.component';
+
+import { ModalComponent } from '../../modal/modal.component';
 
 @Component({
   selector: 'gn-individuals-individuals-map-list',
@@ -178,22 +179,22 @@ export class IndividualsMapListComponent implements OnInit, OnDestroy {
    * @param {Individual} $event The selected Individual to delete
    * @memberof IndividualsMapListComponent
    */
+
   public openDeleteModal($event: Individual) {
     this.selectedRows = [$event];
-    const modalRef = this._ngbModal.open(DeleteModalComponent);
+    const modalRef = this._ngbModal.open(ModalComponent);
 
     modalRef.componentInstance.title = this._translate.instant(
       'Individuals.Individuals.Titles.Delete',
       { id: this.selectedRows[0].id_individual }
     );
-
-    modalRef.componentInstance.body = `
+    modalRef.componentInstance.bodyHTML = `
         ${this._translate.instant('Individuals.Individuals.Fields.individual_name')} : ${this.selectedRows[0].individual_name}<br>
         ${this._translate.instant('Individuals.Individuals.Fields.taxref_nom_vern')} : ${this.selectedRows[0].taxref_nom_vern}<br>
         ${this._translate.instant('Individuals.Individuals.Fields.nomenclature_sex_name')} : ${this.selectedRows[0].nomenclature_sex_name}<br>
       `;
-
-    modalRef.componentInstance.confirm.subscribe((id: number) => {
+    modalRef.componentInstance.validateButtonType = 'delete';
+    modalRef.componentInstance.validate.subscribe((id: number) => {
       this._onDelete();
     });
   }

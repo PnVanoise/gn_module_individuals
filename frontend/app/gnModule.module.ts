@@ -18,7 +18,6 @@ import { MainComponent } from './components/main/main.component';
 import { MapListComponent } from './components/map-list/map-list.component';
 import { ListComponent } from './components/list/list.component';
 import { InfoComponent } from './components/info/info.component';
-import { DeleteModalComponent } from './components/delete-modal/delete-modal.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { FormComponent } from './components/form/form.component';
 import { InputTextComponent } from './components/input/input-text.component';
@@ -59,7 +58,6 @@ export function createTranslateLoader(http: HttpClient, config: cs) {
     InputTextComponent,
     TextareaComponent,
     InputRadioComponent,
-    DeleteModalComponent,
     ModalComponent,
     DevicesListComponent,
     DevicesFiltersComponent,
