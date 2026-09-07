@@ -186,7 +186,9 @@ class IndividualsDetailSchema(IndividualsBaseSchema):
         return obj.last_obs_observers
 
     def get_deployments(self, obj):
-        deployments = sorted(obj.deployments, key=lambda d: d.install_date or datetime.min, reverse=True)
+        deployments = sorted(
+            obj.deployments, key=lambda d: d.install_date or datetime.min, reverse=True
+        )
         # individual_name is redundant here: we are already on that individual's page.
         return IndividualsDeploymentsSchema(many=True, exclude=("individual_name",)).dump(
             deployments
