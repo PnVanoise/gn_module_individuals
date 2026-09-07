@@ -41,8 +41,6 @@ export class IndividualsService {
     params.prop ??= INDIVIDUALS_DEFAULT_SORT.prop;
     params.dir ??= INDIVIDUALS_DEFAULT_SORT.dir;
 
-    console.log('Parameters sent to API (Individuals)', params);
-
     Object.keys(params).forEach((key) => {
       if (params[key] != null) {
         httpParams = httpParams.set(key, String(params[key]));
@@ -58,7 +56,6 @@ export class IndividualsService {
     params: APIIndividualFiltersParams
   ): Observable<FeatureCollection<Individual>> {
     let httpParams = new HttpParams();
-    console.log('Parameters sent to API (Individuals Geometry)', params);
 
     Object.keys(params).forEach((key) => {
       if (params[key] != null) {

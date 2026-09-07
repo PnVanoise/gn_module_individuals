@@ -22,11 +22,11 @@ import { DevicesService } from '../../../services/devices.service';
   standalone: false,
 })
 export class DevicesInfoComponent implements OnInit {
-  public dataTable$: Observable<Device> = new Observable<Device>();
+  public datatable!: Device;
   public deploymentsColumns: Column<Deployment>[] = [];
   public rowHeight: number = DATATABLE_CONFIG.TABLE_ROW_HEIGHT;
-  public allowedToDelete!: AccessResult;
-  public allowedToEdit!: AccessResult;
+  public allowedToDelete: AccessResult = { id: 0, access: false, message: null };
+  public allowedToEdit: AccessResult = { id: 0, access: false, message: null };
   private _deviceId!: number;
 
   constructor(
@@ -41,7 +41,7 @@ export class DevicesInfoComponent implements OnInit {
   ngOnInit(): void {
     // First initialisation of the table with the resolver data, to display something while waiting for translations to load and avoid having an empty table at the beginning
     this._route.data.subscribe(({ datatable }) => {
-      this.dataTable$ = of(datatable);
+      this.datatable = datatable;
       this._deviceId = datatable.id_tracking_device;
 
       // If they're deployments to display, create the columns table for ngx-datatable with translated fields
@@ -60,9 +60,17 @@ export class DevicesInfoComponent implements OnInit {
       } else {
         datatable.deployments = [];
       }
-
-      this._setPermissions(datatable);
     });
+
+    // To be sure to wait translations before setting permissions
+    this._translate
+      .get([
+        'Individuals.ApiErrors.InsufficientPermissions',
+        'Individuals.ApiErrors.HasDeployment'
+      ])
+      .subscribe(() => {
+        this._setPermissions(this.datatable);
+      });
   }
 
   onDelete(): void {
@@ -91,26 +99,24 @@ export class DevicesInfoComponent implements OnInit {
    * @memberof DevicesInfoComponent
    */
   private _setPermissions(datatable: Device) {
-    console.log(datatable.cruved);
-    this.allowedToEdit = { id: datatable.id_tracking_device, access: true };
-    this.allowedToDelete = { id: datatable.id_tracking_device, access: true };
+    // Edit Access
+    this.allowedToEdit = { 
+      id: datatable.id_tracking_device, 
+      access: datatable.cruved?.U ?? false,
+      message: datatable.cruved?.U ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions')
+    };
 
     // Delete access
-    this.allowedToDelete.access = datatable.cruved?.D;
-    this.allowedToDelete.message = this.allowedToDelete.access
-      ? null
-      : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
+    this.allowedToDelete = { 
+      id: datatable.id_tracking_device, 
+      access: datatable.cruved?.D ?? false,
+      message: datatable.cruved?.D ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions')
+    };
 
     // Check if device has deployments, if yes : no access
     if (this.allowedToDelete.access && datatable.deployments?.length > 0) {
       this.allowedToDelete.access = false;
       this.allowedToDelete.message = this._translate.instant('Individuals.ApiErrors.HasDeployment');
     }
-
-    // Edit Access
-    this.allowedToEdit.access = datatable.cruved?.U ?? false;
-    this.allowedToEdit.message = this.allowedToEdit.access
-      ? null
-      : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions');
   }
 }

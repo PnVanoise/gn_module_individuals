@@ -35,7 +35,6 @@ export class DevicesService {
     let httpParams = new HttpParams();
     params.prop ??= DEVICES_DEFAULT_SORT.prop;
     params.dir ??= DEVICES_DEFAULT_SORT.dir;
-    console.log('Parameters sent to API (Devices)', params);
 
     Object.keys(params).forEach((key) => {
       if (params[key] != null) {

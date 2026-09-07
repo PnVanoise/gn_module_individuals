@@ -103,12 +103,11 @@
 </ng-template>
 
 <gn-individuals-info
-  *ngIf="dataTable$ | async as dataTable"
   [infoTemplate]="infoTemplate"
-  [dataTable]="dataTable"
-  [infoTitle]="'Individuals.Devices.Titles.Info' | translate: { id: dataTable.id_tracking_device }"
+  [datatable]="datatable"
+  [infoTitle]="'Individuals.Devices.Titles.Info' | translate: { id: datatable.id_tracking_device }"
   [objectName]="'devices'"
-  [objectId]="dataTable.id_tracking_device"
+  [objectId]="datatable.id_tracking_device"
   [allowedToEdit]="allowedToEdit"
   [allowedToDelete]="allowedToDelete"
   (delete)="onDelete()"
