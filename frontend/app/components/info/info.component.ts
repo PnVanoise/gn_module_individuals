@@ -24,7 +24,7 @@ export class InfoComponent implements OnInit, AfterViewInit {
   @Output() delete: EventEmitter<any> = new EventEmitter();
   @Input() infoTemplate!: TemplateRef<any>;
   @Input() infoTitle: string = '';
-  @Input() dataTable: any;
+  @Input() datatable: any;
   @Input() objectName: string = '';
   @Input() objectId: number | null = null;
   @Input() allowedToEdit!: AccessResult;

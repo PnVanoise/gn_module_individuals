@@ -1,0 +1,129 @@
+<!-- SUMMARY TEMPLATE -->
+<ng-template
+  #summaryTemplate
+  let-row="row"
+>
+  <div class="row mx-0">
+    <div class="col-12 col-md-6 px-0">
+      <strong>{{ 'Individuals.Deployments.Fields.comment' | translate }} :</strong>
+      {{ row.comment ?? '-' }}
+    </div>
+    <div class="col-12 col-md-6 px-0">
+      <strong>{{ 'Individuals.Deployments.Fields.meta_create_date' | translate }} :</strong>
+      {{ row.meta_create_date }}
+    </div>
+    <div class="col-12 col-md-6 px-0">
+      <strong>{{ 'Individuals.Deployments.Fields.meta_update_date' | translate }} :</strong>
+      {{ row.meta_update_date ?? '-' }}
+    </div>
+    <div class="col-12 col-md-6 px-0">
+      <strong>{{ 'Individuals.Devices.Fields.digitiser_name' | translate }} :</strong>
+      {{ row.digitiser_name }}
+    </div>
+  </div>
+</ng-template>
+
+<!-- INFO TEMPLATE -->
+<ng-template
+  #infoTemplate
+  let-datatable="datatable"
+>
+  <div class="content row">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.individual_name' | translate }}</h3>
+      <p>
+        {{ datatable['individual_name'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.taxref_nom_vern' | translate }}</h3>
+      <p>{{ datatable['nom_vern'] }} ( {{ datatable['lb_nom'] }})</p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">
+        {{ 'Individuals.Individuals.Fields.nomenclature_sex_name' | translate }}
+      </h3>
+      <p>
+        {{ datatable['nomenclature_sex']?.['label_' + defaultLang] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.comment' | translate }}</h3>
+      <p>
+        {{ datatable['comment'] ?? '-' }}
+      </p>
+    </div>
+  </div>
+  <div class="content row one-per-row">
+    <div
+      class="col-12 padding-sm"
+    >
+      <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.deployments' | translate }}</h3>
+
+      <p class="list-component">
+        <gn-individuals-list
+          [idFieldName]="'id_deployment'"
+          [displayedColumnsParams]="displayedDeploymentsColumnsParams"
+          [availableColumnsParams]="availableDeploymentsColumnsParams"
+          [dataTable$]="datatable_deployments$"
+          [fieldsTranslation]="'Individuals.Deployments.Fields'"
+          [contentHeight]="null"
+          [datatableColumnsLink]="datatableColumnsLink"
+          [allowedToEdit]="allowedToChangeDeployments"
+          [allowedToDelete]="allowedToChangeDeployments"
+          [summaryTemplate]="summaryTemplate"
+          [usePagination]="false"
+          [displayFilterButton]="false"
+          [displayExportButton]="false"
+          [displayInfoButtons]="false"
+          (add)="addOrEditDeployment({ id_individual: datatable.id_individual })"
+          (edit)="addOrEditDeployment($event)"
+          (delete)="deleteDeployment($event.id_deployment)"
+        ></gn-individuals-list>
+      </p>
+    </div>
+  </div>
+  <div class="content row">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Individuals.Fields.digitiser_name' | translate }}</h3>
+      <p>
+        {{ datatable['digitiser']?.['nom_complet'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">
+        {{ 'Individuals.Individuals.Fields.meta_create_date' | translate }}
+      </h3>
+      <p>
+        {{ datatable['meta_create_date'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">
+        {{ 'Individuals.Individuals.Fields.meta_update_date' | translate }}
+      </h3>
+      <p>
+        {{ datatable['meta_update_date'] ?? '-' }}
+      </p>
+    </div>
+  </div>
+  <h3 class="text-muted">infos complémentaires</h3>
+  <div
+    class="content row"
+    *ngFor="let additionalField of additionalFields"
+  >
+    <b>{{ additionalField.attribut_label }} :</b>
+    {{ datatable['additional_data'][additionalField.attribut_name] }}
+  </div>
+</ng-template>
+
+<gn-individuals-info
+  [infoTemplate]="infoTemplate"
+  [datatable]="datatable"
+  [infoTitle]="'Individuals.Individuals.Titles.Info' | translate: { id: datatable.id_individual }"
+  [objectName]="'individuals'"
+  [objectId]="datatable.id_individual"
+  [allowedToEdit]="allowedToEdit"
+  [allowedToDelete]="allowedToDelete"
+  (delete)="onDelete()"
+></gn-individuals-info>

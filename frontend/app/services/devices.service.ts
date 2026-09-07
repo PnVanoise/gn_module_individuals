@@ -13,6 +13,7 @@ import {
 } from '../models/devices.models';
 import { PaginatedItemCollection, APIPaginationParams } from '../models/common.models';
 import { DEVICES_DEFAULT_SORT } from '../utils/constants.util';
+
 @Injectable()
 export class DevicesService {
   private _OBJECT_API: string;
@@ -34,7 +35,6 @@ export class DevicesService {
     let httpParams = new HttpParams();
     params.prop ??= DEVICES_DEFAULT_SORT.prop;
     params.dir ??= DEVICES_DEFAULT_SORT.dir;
-    console.log('Parameters sent to API (Devices)', params);
 
     Object.keys(params).forEach((key) => {
       if (params[key] != null) {
@@ -54,7 +54,6 @@ export class DevicesService {
   createOrUpdateDevice(
     device: any,
     formAction: string,
-    id: number | null = null,
     params: Record<string, string> = {}
   ): Observable<Device> {
     params['format'] = 'json';
@@ -67,19 +66,17 @@ export class DevicesService {
       comment: device.comment,
     };
 
-    if (formAction === 'EDIT') {
-      payload = {
-        ...payload,
-        id_tracking_device: device.id,
-      };
-    }
     if (formAction === 'ADD') {
       return this._http.post<Device>(`${this._OBJECT_API}`, payload, {
         params: params,
         headers: this._headers,
       });
     } else {
-      return this._http.put<Device>(`${this._OBJECT_API}/${id}`, payload, {
+      payload = {
+        ...payload,
+        id_tracking_device: device.id_tracking_device,
+      };
+      return this._http.put<Device>(`${this._OBJECT_API}/${device.id_tracking_device}`, payload, {
         params: params,
         headers: this._headers,
       });

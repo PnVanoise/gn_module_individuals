@@ -3,19 +3,21 @@ import { Routes } from '@angular/router';
 import { MainComponent } from './components/main/main.component';
 import { MapListComponent } from './components/map-list/map-list.component';
 
-import { DevicesListComponent } from './components/devices-list/devices-list.component';
-import { DevicesInfoComponent } from './components/devices-info/devices-info.component';
-import { DevicesFormComponent } from './components/devices-form/devices-form.component';
+import { DevicesListComponent } from './components/devices/list/devices-list.component';
+import { DevicesInfoComponent } from './components/devices/info/devices-info.component';
+import { DevicesFormComponent } from './components/devices/form/devices-form.component';
 import { DevicesResolver, DeviceResolver } from './resolvers/devices.resolver';
 
-import { IndividualsMapListComponent } from './components/individuals-map-list/individuals-map-list.component';
+import { IndividualsMapListComponent } from './components/individuals/map-list/individuals-map-list.component';
 import {
   IndividualsResolver,
   IndividualsMapResolver,
   IndividualResolver,
 } from './resolvers/individuals.resolver';
-import { IndividualsInfoComponent } from './components/individuals-info/individuals-info.component';
-import { IndividualsFormComponent } from './components/individuals-form/individuals-form.component';
+import { IndividualsInfoComponent } from './components/individuals/info/individuals-info.component';
+import { IndividualsFormComponent } from './components/individuals/form/individuals-form.component';
+
+import { AdditionalFieldsResolver } from './resolvers/additionnal-fields.resolver';
 
 export const routes: Routes = [
   {
@@ -38,16 +40,25 @@ export const routes: Routes = [
       {
         path: 'individuals/info/:id_individual',
         component: IndividualsInfoComponent,
-        resolve: { datatable: IndividualResolver },
+        resolve: { 
+          datatable: IndividualResolver,
+          additionalFields: AdditionalFieldsResolver 
+        },
       },
       {
         path: 'individuals/form',
         component: IndividualsFormComponent,
+        resolve: { 
+          additionalFields: AdditionalFieldsResolver 
+        },
       },
       {
         path: 'individuals/form/:id_individual',
         component: IndividualsFormComponent,
-        resolve: { datatable: IndividualResolver },
+        resolve: { 
+          datatable: IndividualResolver,
+          additionalFields: AdditionalFieldsResolver 
+        },
       },
       {
         path: 'observations',

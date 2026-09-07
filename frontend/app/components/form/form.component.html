@@ -10,20 +10,25 @@
         class="mr-1 bg-secondary text-white border-0"
         type="button"
         [disabled]="false"
-        [routerLink]="['/' + moduleName + '/' + objectName]"
+        (click)="cancel.emit()"
       >
         <mat-icon>close</mat-icon>
       </button>
-      <button
-        mat-mini-fab
-        [matTooltip]="'Individuals.Actions.Save' | translate"
-        class="mr-1 bg-success text-white border-0"
-        type="button"
-        [disabled]="!canSave"
-        (click)="save.emit()"
+      <span
+        [matTooltip]="allowedToSave.message ?? ('Individuals.Actions.Save' | translate)"
+        [class.cursor-not-allowed]="!allowedToSave.access"
       >
-        <mat-icon>save</mat-icon>
-      </button>
+        <button
+          mat-mini-fab
+          [matTooltip]="'Individuals.Actions.Save' | translate"
+          class="mr-1 bg-success text-white border-0"
+          type="button"
+          [disabled]="!allowedToSave.access"
+          (click)="save.emit()"
+        >
+          <mat-icon>save</mat-icon>
+        </button>
+      </span>
     </div>
   </h2>
   <div

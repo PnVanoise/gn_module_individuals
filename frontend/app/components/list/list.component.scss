@@ -2,6 +2,8 @@
 @use '../../styles/datatable.scss' as *;
 
 .action-buttons {
+  display: flex;
+  justify-content: flex-start;
   margin-bottom: 10px;
 }
 
@@ -14,4 +16,8 @@
 // To select the filters div
 .filters {
   margin-bottom: 0.7rem;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
 }

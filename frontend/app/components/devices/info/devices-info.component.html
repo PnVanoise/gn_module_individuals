@@ -1,0 +1,114 @@
+<ng-template
+  #infoTemplate
+  let-dataTable="dataTable"
+>
+  <div class="content row">
+    <div
+      *ngIf="'nomenclature_device_type_name' as field"
+      class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm"
+    >
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.' + field | translate }}</h3>
+      <p>
+        {{ dataTable[field] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.provider_name' | translate }}</h3>
+      <p>
+        {{ dataTable['provider_name'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.provider_device_id' | translate }}</h3>
+      <p>
+        {{ dataTable['provider_device_id'] }}
+      </p>
+    </div>
+  </div>
+  <div class="content row one-per-row">
+    <div class="col-12 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.referer_name' | translate }}</h3>
+      <p>
+        {{ dataTable['referer_name'] }}
+      </p>
+    </div>
+    <div class="col-12 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.comment' | translate }}</h3>
+      <p>
+        {{ dataTable['comment'] ?? '-' }}
+      </p>
+    </div>
+  </div>
+  <div class="content row one-per-row">
+    <div class="col-12 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.deployments' | translate }}</h3>
+      <p *ngIf="dataTable['deployments']?.length > 0">
+        <ngx-datatable
+          class="material striped margin-top-xs table-size expandable"
+          [columnMode]="'force'"
+          [columns]="deploymentsColumns"
+          [rowHeight]="rowHeight"
+          [headerHeight]="rowHeight + 10"
+          [footerHeight]="rowHeight + 10"
+          [rows]="dataTable['deployments']"
+          [sorts]="[]"
+        >
+          <ngx-datatable-column
+            *ngFor="let column of deploymentsColumns"
+            [name]="column.name"
+            [prop]="column.prop"
+          >
+            <ng-template
+              ngx-datatable-cell-template
+              let-row="row"
+            >
+              <span>
+                {{
+                  row[column.prop] === null || row[column.prop] === undefined
+                    ? '-'
+                    : row[column.prop] === false
+                      ? ('Individuals.Others.No' | translate)
+                      : row[column.prop] === true
+                        ? ('Individuals.Others.Yes' | translate)
+                        : row[column.prop]
+                }}
+              </span>
+            </ng-template>
+          </ngx-datatable-column>
+        </ngx-datatable>
+      </p>
+      <p *ngIf="deploymentsColumns.length == 0">-</p>
+    </div>
+  </div>
+  <div class="content row">
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.digitiser_name' | translate }}</h3>
+      <p>
+        {{ dataTable['digitiser_name'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.meta_create_date' | translate }}</h3>
+      <p>
+        {{ dataTable['meta_create_date'] }}
+      </p>
+    </div>
+    <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
+      <h3 class="text-muted">{{ 'Individuals.Devices.Fields.meta_update_date' | translate }}</h3>
+      <p>
+        {{ dataTable['meta_update_date'] ?? '-' }}
+      </p>
+    </div>
+  </div>
+</ng-template>
+
+<gn-individuals-info
+  [infoTemplate]="infoTemplate"
+  [datatable]="datatable"
+  [infoTitle]="'Individuals.Devices.Titles.Info' | translate: { id: datatable.id_tracking_device }"
+  [objectName]="'devices'"
+  [objectId]="datatable.id_tracking_device"
+  [allowedToEdit]="allowedToEdit"
+  [allowedToDelete]="allowedToDelete"
+  (delete)="onDelete()"
+></gn-individuals-info>
