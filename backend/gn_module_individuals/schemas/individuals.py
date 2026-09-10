@@ -166,7 +166,10 @@ class IndividualsDetailSchema(IndividualsBaseSchema):
     # The exclusion of max_level_profil avoid to load the relationship User.groups
     # thanks to that no error "Internal Server Error 'User.groups' is not available due to lazy='raise'"
     digitiser = ma.Nested(UserSchema(exclude=("max_level_profil",)), dump_only=True)
-    deployments = fields.Method("get_deployments", dump_only=True)
+    # Named differently from the model's `deployments` relationship: SmartRelationshipsMixin
+    # would otherwise try to read `.deferred` off that RelationshipProperty and crash, since
+    # only ColumnProperty supports it. data_key keeps the JSON output key as "deployments".
+    deployments_list = fields.Method("get_deployments", dump_only=True, data_key="deployments")
 
     last_observation_date = fields.Method("get_last_observation_date", dump_only=True)
     last_observation_observers = fields.Method("get_last_observation_observers", dump_only=True)
@@ -206,7 +209,8 @@ class IndividualsWriteSchema(IndividualsBaseSchema):
     # id_digitiser is NOT NULL on the model but always set by the route from the
     # current user, so it must not be required at load time.
     id_digitiser = fields.Integer(dump_only=True)
-    deployments = fields.Method("get_deployments", dump_only=True)
+    # See IndividualsDetailSchema for why this can't be named `deployments`.
+    deployments_list = fields.Method("get_deployments", dump_only=True, data_key="deployments")
 
     # Serialization
 

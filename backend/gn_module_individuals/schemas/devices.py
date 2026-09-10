@@ -157,7 +157,10 @@ class TrackingDevicesDetailSchema(TrackingDevicesBaseSchema):
     nomenclature_device_type = fields.Nested(NomenclatureSchema, dump_only=True)
     referer = fields.Nested(UserSchema, dump_only=True)
     digitiser = fields.Nested(UserSchema, dump_only=True)
-    deployments = fields.Method("get_deployments", dump_only=True)
+    # Named differently from the model's `deployments` relationship: SmartRelationshipsMixin
+    # would otherwise try to read `.deferred` off that RelationshipProperty and crash, since
+    # only ColumnProperty supports it. data_key keeps the JSON output key as "deployments".
+    deployments_list = fields.Method("get_deployments", dump_only=True, data_key="deployments")
 
     def get_deployments(self, obj):
         if not obj.deployments:

@@ -571,7 +571,7 @@ class TestGetIndividual:
         assert dep["install_date"] == "2024-01-01"
         assert dep["marking_code"] is None
         assert dep["removal_date"] is None
-        assert dep["name_digitiser"] is None
+        assert dep["digitiser_name"] is None
         assert dep["deployment_type_name"] == "Dispositif de suivi"
         assert dep["deployment_location_name"] == "Encolure"
         assert "individual_name" not in dep

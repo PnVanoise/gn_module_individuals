@@ -181,7 +181,8 @@ class TestGetDevice:
         )
         assert r.status_code == 200
         data = r.get_json()
-        expected_keys = set(TrackingDevicesDetailSchema().fields.keys())
+        schema = TrackingDevicesDetailSchema()
+        expected_keys = {field.data_key or name for name, field in schema.fields.items()}
         missing = expected_keys - data.keys()
         assert not missing, f"Champs manquants dans la réponse : {missing}"
 
