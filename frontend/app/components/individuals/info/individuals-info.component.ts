@@ -68,6 +68,7 @@ export class IndividualsInfoComponent implements OnInit {
     // Resolver : First initialisation of the datatable and additional fields
     this._route.data.pipe(takeUntil(this._destroy$)).subscribe(({ datatable, additionalFields }) => {
       this.datatable = datatable;
+
       this.additionalFields = additionalFields ?? [];
 
       // If they're deployments to display, create and ItemCollection for 
