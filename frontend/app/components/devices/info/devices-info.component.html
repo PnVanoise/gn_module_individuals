@@ -1,6 +1,6 @@
 <ng-template
   #infoTemplate
-  let-dataTable="dataTable"
+  let-datatable="datatable"
 >
   <div class="content row">
     <div
@@ -9,19 +9,19 @@
     >
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.' + field | translate }}</h3>
       <p>
-        {{ dataTable[field] }}
+        {{ datatable[field] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.provider_name' | translate }}</h3>
       <p>
-        {{ dataTable['provider_name'] }}
+        {{ datatable['provider_name'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.provider_device_id' | translate }}</h3>
       <p>
-        {{ dataTable['provider_device_id'] }}
+        {{ datatable['provider_device_id'] }}
       </p>
     </div>
   </div>
@@ -29,20 +29,20 @@
     <div class="col-12 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.referer_name' | translate }}</h3>
       <p>
-        {{ dataTable['referer_name'] }}
+        {{ datatable['referer_name'] }}
       </p>
     </div>
     <div class="col-12 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.comment' | translate }}</h3>
       <p>
-        {{ dataTable['comment'] ?? '-' }}
+        {{ datatable['comment'] ?? '-' }}
       </p>
     </div>
   </div>
   <div class="content row one-per-row">
     <div class="col-12 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.deployments' | translate }}</h3>
-      <p *ngIf="dataTable['deployments']?.length > 0">
+      <p *ngIf="datatable['deployments']?.length > 0">
         <ngx-datatable
           class="material striped margin-top-xs table-size expandable"
           [columnMode]="'force'"
@@ -50,7 +50,7 @@
           [rowHeight]="rowHeight"
           [headerHeight]="rowHeight + 10"
           [footerHeight]="rowHeight + 10"
-          [rows]="dataTable['deployments']"
+          [rows]="datatable['deployments']"
           [sorts]="[]"
         >
           <ngx-datatable-column
@@ -84,19 +84,19 @@
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.digitiser_name' | translate }}</h3>
       <p>
-        {{ dataTable['digitiser_name'] }}
+        {{ datatable['digitiser_name'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.meta_create_date' | translate }}</h3>
       <p>
-        {{ dataTable['meta_create_date'] }}
+        {{ datatable['meta_create_date'] }}
       </p>
     </div>
     <div class="col-xs-12 col-sm-6 col-md-4 col-lg-4 padding-sm">
       <h3 class="text-muted">{{ 'Individuals.Devices.Fields.meta_update_date' | translate }}</h3>
       <p>
-        {{ dataTable['meta_update_date'] ?? '-' }}
+        {{ datatable['meta_update_date'] ?? '-' }}
       </p>
     </div>
   </div>

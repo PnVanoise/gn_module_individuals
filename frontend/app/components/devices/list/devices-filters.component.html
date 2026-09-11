@@ -1,5 +1,5 @@
 <div class="d-flex flex-wrap filters-form">
-  <!-- cd_nom : taxon -->
+  <!-- TAXONOMY : cd_nom -->
   <pnx-taxonomy
     *ngIf="'cd_nom' as field"
     [ngClass]="'form-group w-25'"
@@ -9,7 +9,7 @@
     [charNumber]="3"
   ></pnx-taxonomy>
 
-  <!-- id_nomenclature_device_type -->
+  <!-- NOMENCLATURE : id_nomenclature_device_type -->
   <pnx-nomenclature
     [ngClass]="'form-group'"
     [label]="'Individuals.Devices.Fields.id_nomenclature_device_type' | translate"
@@ -17,16 +17,26 @@
     [codeNomenclatureType]="'TYPE_DISPO_SUIVI'"
   ></pnx-nomenclature>
 
-  <!-- provider_name -->
-  <gn-individuals-input-text
-    [label]="'Individuals.Devices.Fields.provider_name' | translate"
-    [parentFormControl]="filtersForm.get('provider_name')"
-    [maxLength]="formConstraints['provider_name'].maxLength"
-    [errorKey]="'Individuals.Errors.' + [formConstraints['provider_name'].help] | translate"
-    [placeHolder]="'Individuals.PlaceHolder.firstLetters' | translate"
-  ></gn-individuals-input-text>
+  <!-- INPUT TEXT : provider_name -->
+  <div class="form-group w-50">
+    <label class="small">{{ 'Individuals.Devices.Fields.provider_name' | translate }}</label>
+    <input
+      type="text"
+      class="form-control form-control-sm"
+      [formControl]="$any(filtersForm.get('provider_name'))"
+      [maxlength]="formConstraints['provider_name'].maxLength"
+      [placeholder]="'Individuals.PlaceHolder.firstLetters' | translate"
+      [class.is-invalid]="filtersForm.get('provider_name')?.invalid"
+    />
+    <small
+      class="text-danger d-block d-flex justify-content-end"
+      *ngIf="filtersForm.get('provider_name')?.errors?.['pattern']"
+    >
+      {{ 'Individuals.Errors.' + [formConstraints['provider_name'].help] | translate }}
+    </small>
+  </div>
 
-  <!-- referer_name -->
+  <!-- OBSERVERS : referer_name -->
   <pnx-observers
     [ngClass]="'form-group w-25'"
     [label]="'Individuals.Devices.Fields.id_referer' | translate"

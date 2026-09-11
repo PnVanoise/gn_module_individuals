@@ -166,8 +166,8 @@ export class DevicesFormComponent implements OnInit {
         const currentObject = this._module.currentModule.module_objects['DEVICES'];
         this.allowedToSave = {
           id: 0,
-          access: currentObject?.cruved?.C ?? false,
-          message: currentObject?.cruved?.C ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions'),
+          access: currentObject?.cruved?.C == 0 ? false : true,
+          message: currentObject?.cruved?.C == 0 ? this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') : null
         };
       }
 

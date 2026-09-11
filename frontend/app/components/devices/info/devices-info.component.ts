@@ -34,8 +34,7 @@ export class DevicesInfoComponent implements OnInit {
     private _route: ActivatedRoute,
     private _router: Router,
     private _translate: TranslateService,
-    private _service: DevicesService,
-    private _location: Location
+    private _service: DevicesService
   ) {}
 
   ngOnInit(): void {

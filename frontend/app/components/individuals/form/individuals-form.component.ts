@@ -50,7 +50,7 @@ export class IndividualsFormComponent implements OnInit {
   ]
   public allowedToSave: AccessResult = { id: 0, access: false, message: null };
   public allowedToChangeDeployments: Record<number, AccessResult> = {};
-  public objectValues = Object.values;
+  public allowedToAddDeployments: AccessResult = { id: 0, access: false, message: null };
 
   constructor(
     private _route: ActivatedRoute,
@@ -120,11 +120,19 @@ export class IndividualsFormComponent implements OnInit {
       ])
       .subscribe(() => {
         this._setPermissions(this.datatable);
+        // Angular consider that the form content is not modified
+        this.form.markAsPristine();
       });
 
-    this.form.valueChanges.subscribe(() => {
-      this._setPermissions(this.datatable);
-    });
+    // Update permissions when form values change
+    this.form.valueChanges
+      .pipe(
+        filter(() => this.form.dirty),
+        takeUntil(this._destroy$)
+      )
+      .subscribe(() => {
+        this._setPermissions(this.datatable);
+      });
   }
 
   ngOnDestroy() {
@@ -137,10 +145,14 @@ export class IndividualsFormComponent implements OnInit {
     modalRef.componentInstance.bodyComponent = DeploymentsFormComponent;
     modalRef.componentInstance.bodyComponentData = deployment;
     modalRef.componentInstance.validateButtonType = null;
-    modalRef.result.then(() => {
-      this._loadDeploymentData();
-      this.form.markAsDirty();
-    });
+    modalRef.result
+      .then(() => {
+        this._loadDeploymentData();
+        this.form.markAsDirty();
+      })
+      .catch(() => {
+        // Modal is closed
+      });
   }
 
   deleteDeployment(id_deployment: number) {
@@ -162,15 +174,13 @@ export class IndividualsFormComponent implements OnInit {
   }
 
   patchForm(individual: any): void {
-    /// Modifier par : Device au lieu de any et faire le mapping si besoin
-    this.form.patchValue(individual,{ emitEvent: false });
+    this.form.patchValue(individual);
     this.form.patchValue(
       {
         // En attendant la correction de l'API
         cd_nom: { cd_nom: individual.cd_nom, nom_valide: individual.nom_vern },
         id_nomenclature_sex: individual.nomenclature_sex.id_nomenclature,
-      },
-      { emitEvent: false }
+      }
     );
   }
 
@@ -225,7 +235,7 @@ export class IndividualsFormComponent implements OnInit {
    * @memberof IndividualsFormComponent
    */
   private _setPermissions(datatable: Individual): void {
-    // Save Access 
+    // Save Access
     if (datatable) {
       // Edit mode
       this.allowedToSave = { 
@@ -241,8 +251,8 @@ export class IndividualsFormComponent implements OnInit {
       const currentObject = this._module.currentModule.module_objects['INDIVIDUALS'];
       this.allowedToSave = {
         id: 0,
-        access: currentObject?.cruved?.C ?? false,
-        message: currentObject?.cruved?.C ?? false ? null : this._translate.instant('Individuals.ApiErrors.InsufficientPermissions'),
+        access: currentObject?.cruved?.C == 0 ? false : true,
+        message: currentObject?.cruved?.C == 0 ? this._translate.instant('Individuals.ApiErrors.InsufficientPermissions') : null
       };
     }
 
@@ -259,6 +269,14 @@ export class IndividualsFormComponent implements OnInit {
 
     // Edit mode : Deployment access rights are the same as the individual edit access rights
     if (datatable) {
+      this.allowedToAddDeployments = { 
+        id: datatable.id_individual? datatable.id_individual : 0, 
+        access: datatable.cruved?.U ?? false, 
+        message: datatable.cruved?.U ?? false ? null : this._translate.instant(
+          'Individuals.ApiErrors.InsufficientPermissions'
+        )
+      };
+
       this.allowedToChangeDeployments = {};
       datatable.deployments?.forEach((deployment: Deployment) => {
         // Edit and delete deployment actions have the same access rights

@@ -1,17 +1,35 @@
 <div class="d-flex flex-wrap filters-form">
-  <!-- active -->
-  <gn-individuals-input-radio
-    [label]="'Individuals.Individuals.Fields.active' | translate"
-    [parentFormControl]="filtersForm.get('active')"
-    [inputName]="'active'"
-    [options]="[
+  <!-- INPUT RADIO : active -->
+  <div
+    class="form-group"
+    [class.ng-invalid]="$any(filtersForm.get('active'))?.invalid"
+    [class.ng-touched]="$any(filtersForm.get('active'))?.touched"
+    [class.is-required]="$any(filtersForm.get('active'))?.hasError('required')"
+  >
+    <label class="small">{{ 'Individuals.Individuals.Fields.active' | translate }}</label>
+    <div class="form-check">
+      <div *ngFor="let option of [
       { value: 'true', label: 'Individuals.Others.Yes' | translate },
       { value: 'false', label: 'Individuals.Others.No' | translate },
       { value: '', label: 'Individuals.Others.All' | translate }
-    ]"
-  ></gn-individuals-input-radio>
+      ]
+      ">
+        <input
+          type="radio"
+          class="form-check-input"
+          [id]="option.value"
+          [value]="option.value"
+          [name]="'active'"
+          [formControl]="$any(filtersForm.get('active'))"
+        />
+        <label class="small">
+          {{ option.label }}
+        </label>
+      </div>
+    </div>
+  </div>
 
-  <!-- cd_nom : taxon -->
+  <!-- TAXONOMY : cd_nom -->
   <pnx-taxonomy
     [ngClass]="'form-group w-25'"
     [label]="'Individuals.Devices.Filters.cd_nom' | translate"
@@ -20,7 +38,7 @@
     [charNumber]="3"
   ></pnx-taxonomy>
 
-  <!-- id_nomenclature_sex -->
+  <!-- NOMENCLATURE : id_nomenclature_sex -->
   <pnx-nomenclature
     [ngClass]="'form-group'"
     [label]="'Individuals.Individuals.Fields.nomenclature_sex_name' | translate"
@@ -29,14 +47,24 @@
     [cdNomenclatures]="[2, 3]"
   ></pnx-nomenclature>
 
-  <!-- individual_name -->
-  <gn-individuals-input-text
-    [label]="'Individuals.Individuals.Fields.individual_name' | translate"
-    [parentFormControl]="filtersForm.get('individual_name')"
-    [maxLength]="formConstraints['individual_name'].maxLength"
-    [errorKey]="'Individuals.Errors.' + [formConstraints['individual_name'].help] | translate"
-    [placeHolder]="'Individuals.Form.firstLetters' | translate"
-  ></gn-individuals-input-text>
+  <!-- INPUT TEXT : individual_name -->
+  <div class="form-group w-50">
+    <label class="small">{{ 'Individuals.Individuals.Fields.individual_name' | translate }}</label>
+    <input
+      type="text"
+      class="form-control form-control-sm"
+      [formControl]="$any(filtersForm.get('individual_name'))"
+      [maxlength]="formConstraints['individual_name'].maxLength"
+      [placeholder]="'Individuals.PlaceHolder.firstLetters' | translate"
+      [class.is-invalid]="filtersForm.get('individual_name')?.invalid"
+    />
+    <small
+      class="text-danger d-block d-flex justify-content-end"
+      *ngIf="filtersForm.get('individual_name')?.errors?.['pattern']"
+    >
+      {{ 'Individuals.Errors.' + [formConstraints['individual_name'].help] | translate }}
+    </small>
+  </div>
 
   <button
     mat-mini-fab
