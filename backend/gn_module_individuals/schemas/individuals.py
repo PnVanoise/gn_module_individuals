@@ -70,6 +70,9 @@ class IndividualsBaseSchema(CruvedSchemaMixin, SmartRelationshipsMixin, ma.SQLAl
 
     meta_create_date = fields.DateTime(format="%d-%m-%Y", dump_only=True)
     meta_update_date = fields.DateTime(format="%d-%m-%Y", dump_only=True, allow_none=True)
+    # id_digitiser is always set by the route from the current user, regardless of
+    # what is submitted here (see routes/individuals.py), so it must not be loadable.
+    id_digitiser = fields.Integer(dump_only=True)
 
 
 class IndividualsListSchema(IndividualsBaseSchema):
@@ -206,9 +209,6 @@ class IndividualsWriteSchema(IndividualsBaseSchema):
     __object_code__ = "INDIVIDUALS"
 
     uuid_individual = fields.UUID(dump_only=True)
-    # id_digitiser is NOT NULL on the model but always set by the route from the
-    # current user, so it must not be required at load time.
-    id_digitiser = fields.Integer(dump_only=True)
     # See IndividualsDetailSchema for why this can't be named `deployments`.
     deployments_list = fields.Method("get_deployments", dump_only=True, data_key="deployments")
 
