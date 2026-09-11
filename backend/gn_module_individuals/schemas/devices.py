@@ -17,11 +17,11 @@ from .utils import get_label, is_nomenclature_of_type
 from ..utils.errors import APIError, ApiErrorCode
 
 
-class TrackingDevicesBaseSchema(
+class TrackingDeviceBaseSchema(
     CruvedSchemaMixin, SmartRelationshipsMixin, ma.SQLAlchemyAutoSchema
 ):
     """Raw columns plus computed labels. No relationships exposed: see
-    TrackingDevicesDetailSchema for the full nested objects."""
+    TrackingDeviceDetailSchema for the full nested objects."""
 
     class Meta:
         model = TrackingDevices
@@ -125,7 +125,7 @@ class TrackingDevicesBaseSchema(
         return obj.device_label
 
 
-class TrackingDevicesListSchema(TrackingDevicesBaseSchema):
+class TrackingDeviceListSchema(TrackingDeviceBaseSchema):
     """Adds only computed fields on top of the base: no relationships."""
 
     __module_code__ = MODULE_CODE
@@ -148,7 +148,7 @@ class TrackingDevicesListSchema(TrackingDevicesBaseSchema):
         return None
 
 
-class TrackingDevicesDetailSchema(TrackingDevicesBaseSchema):
+class TrackingDeviceDetailSchema(TrackingDeviceBaseSchema):
     """All of the model's relationships, in addition to the base fields."""
 
     __module_code__ = MODULE_CODE
@@ -168,8 +168,8 @@ class TrackingDevicesDetailSchema(TrackingDevicesBaseSchema):
         return DeploymentSummarySchema(many=True).dump(obj.deployments)
 
 
-class TrackingDevicesWriteSchema(TrackingDevicesBaseSchema):
-    class Meta(TrackingDevicesBaseSchema.Meta):
+class TrackingDeviceWriteSchema(TrackingDeviceBaseSchema):
+    class Meta(TrackingDeviceBaseSchema.Meta):
         exclude = (
             "nomenclature_device_type_name",
             "referer_name",

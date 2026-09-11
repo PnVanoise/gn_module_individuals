@@ -508,7 +508,7 @@ class TestGetIndividual:
         missing = self.EXPECTED_FIELDS - payload.keys()
         assert not missing, f"Missing fields in payload: {missing}"
         # Only the nested digitiser object is exposed, not the raw FK, and none
-        # of the list-specific computed fields (those belong to IndividualsListSchema).
+        # of the list-specific computed fields (those belong to IndividualListSchema).
         assert "id_digitiser" not in payload
         assert "taxref_cd_nom" not in payload
         assert "digitiser_name" not in payload

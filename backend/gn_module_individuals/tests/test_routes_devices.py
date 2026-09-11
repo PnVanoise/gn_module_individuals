@@ -3,7 +3,7 @@ from flask import url_for, g
 
 from pypnusershub.tests.utils import set_logged_user
 
-from gn_module_individuals.schemas import TrackingDevicesDetailSchema, TrackingDevicesWriteSchema
+from gn_module_individuals.schemas import TrackingDeviceDetailSchema, TrackingDeviceWriteSchema
 from gn_module_individuals.utils.errors import ApiErrorCode
 
 # ===========================================================================
@@ -181,7 +181,7 @@ class TestGetDevice:
         )
         assert r.status_code == 200
         data = r.get_json()
-        schema = TrackingDevicesDetailSchema()
+        schema = TrackingDeviceDetailSchema()
         expected_keys = {field.data_key or name for name, field in schema.fields.items()}
         missing = expected_keys - data.keys()
         assert not missing, f"Champs manquants dans la réponse : {missing}"
@@ -247,7 +247,7 @@ class TestCreateDevice:
         r = self.client.post(url_for("individuals.create_device"), json=self.VALID_PAYLOAD)
         assert r.status_code == 201
         data = r.get_json()
-        expected_keys = set(TrackingDevicesWriteSchema().fields.keys())
+        expected_keys = set(TrackingDeviceWriteSchema().fields.keys())
         missing = expected_keys - data.keys()
         assert not missing, f"Champs manquants dans la réponse : {missing}"
 
@@ -414,7 +414,7 @@ class TestUpdateDevice:
         )
         assert r.status_code == 200
         data = r.get_json()
-        expected_keys = set(TrackingDevicesWriteSchema().fields.keys())
+        expected_keys = set(TrackingDeviceWriteSchema().fields.keys())
         missing = expected_keys - data.keys()
         assert not missing, f"Champs manquants dans la réponse : {missing}"
 

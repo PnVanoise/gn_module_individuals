@@ -21,12 +21,12 @@ from ..models.individuals import (
     individual_last_observation_geom_expression,
     individual_last_observation_observers_expression,
 )
+from ..schemas.deployments import IndividualDeploymentWriteSchema
 from ..schemas.individuals import (
-    IndividualsDeploymentsWriteSchema,
-    IndividualsDetailSchema,
-    IndividualsListSchema,
-    IndividualsMapSchema,
-    IndividualsWriteSchema,
+    IndividualDetailSchema,
+    IndividualListSchema,
+    IndividualMapSchema,
+    IndividualWriteSchema,
 )
 from ..utils.errors import APIError, ApiErrorCode
 
@@ -255,7 +255,7 @@ def individuals_geometry(scope):
         individual.last_obs_date = row.obs_date
         individual.last_obs_observers = row.observers
 
-    schema = IndividualsMapSchema(
+    schema = IndividualMapSchema(
         many=True,
         only=(
             "id_individual",
@@ -335,7 +335,7 @@ def individual(id_individual, scope):
 
     _assign_last_observation([result])
 
-    schema = IndividualsDetailSchema(only=["+cruved", "nomenclature_sex", "digitiser"])
+    schema = IndividualDetailSchema(only=["+cruved", "nomenclature_sex", "digitiser"])
     return schema.dump(result)
 
 
@@ -351,7 +351,7 @@ def create_individual(scope):
 
     .. :quickref: Individuals;
 
-    Expects a JSON body matching ``IndividualsWriteSchema``. May include a
+    Expects a JSON body matching ``IndividualWriteSchema``. May include a
     ``deployments`` list to create deployments attached to the new individual
     in the same request. See :func:`_sync_deployments`.
 
@@ -367,7 +367,7 @@ def create_individual(scope):
             400,
         )
 
-    schema = IndividualsWriteSchema(unknown=EXCLUDE)
+    schema = IndividualWriteSchema(unknown=EXCLUDE)
     try:
         individual = schema.load(data)
     except ValidationError as e:
@@ -402,7 +402,7 @@ def _sync_deployments(individual, deployments_data, scope):
     if not isinstance(deployments_data, list):
         raise APIError(ApiErrorCode.VALIDATION_ERROR, "deployments must be a list", 400)
 
-    deployment_schema = IndividualsDeploymentsWriteSchema(unknown=EXCLUDE)
+    deployment_schema = IndividualDeploymentWriteSchema(unknown=EXCLUDE)
     kept_deployments = []
 
     for index, deployment_data in enumerate(deployments_data):
@@ -480,7 +480,7 @@ def update_individual(id_individual, scope):
 
     .. :quickref: Individuals;
 
-    Expects a JSON body matching ``IndividualsWriteSchema``. May include a
+    Expects a JSON body matching ``IndividualWriteSchema``. May include a
     ``deployments`` list to create/update deployments in the same request:
     an item with an ``id_deployment`` updates the matching existing
     deployment, an item without one creates a new deployment attached to
@@ -516,7 +516,7 @@ def update_individual(id_individual, scope):
             403,
         )
 
-    schema = IndividualsWriteSchema(unknown=EXCLUDE)
+    schema = IndividualWriteSchema(unknown=EXCLUDE)
     try:
         individual = schema.load(data, instance=individual)
     except ValidationError as e:
@@ -633,7 +633,7 @@ def list_individuals(scope):
     page = request.args.get("page", type=int)
     per_page = request.args.get("per_page", type=int)
     query = _build_individuals_query(scope, filters, sort)
-    schema = IndividualsListSchema(many=True, only=["+cruved"])
+    schema = IndividualListSchema(many=True, only=["+cruved"])
 
     if page is not None and per_page is not None:
         paginated = db.paginate(query, page=page, per_page=per_page)

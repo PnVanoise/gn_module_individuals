@@ -20,9 +20,9 @@ from ..utils.errors import APIError, ApiErrorCode
 
 from .. import MODULE_CODE
 from ..schemas import (
-    TrackingDevicesDetailSchema,
-    TrackingDevicesListSchema,
-    TrackingDevicesWriteSchema,
+    TrackingDeviceDetailSchema,
+    TrackingDeviceListSchema,
+    TrackingDeviceWriteSchema,
 )
 from ..models import TrackingDevices, IndividualDeployments
 
@@ -129,7 +129,7 @@ def device(id_tracking_device, scope):
     """
     # Detail schema always exposes every relationship of the model.
     relationship_fields = list(TrackingDevices.__nomenclatures__) + ["referer", "digitiser"]
-    schema = TrackingDevicesDetailSchema(only=["+cruved"] + relationship_fields)
+    schema = TrackingDeviceDetailSchema(only=["+cruved"] + relationship_fields)
 
     query = (
         db.select(TrackingDevices)
@@ -204,7 +204,7 @@ def list_devices(scope):
 
     paginated = page is not None and per_page is not None
 
-    schema = TrackingDevicesListSchema(only=["+cruved"])
+    schema = TrackingDeviceListSchema(only=["+cruved"])
 
     virtual_sort_cols = {
         "referer_name": (
@@ -310,7 +310,7 @@ def create_device(scope):
 
     .. :quickref: Devices;
 
-    Expects a JSON body matching ``TrackingDevicesWriteSchema``.
+    Expects a JSON body matching ``TrackingDeviceWriteSchema``.
 
     :returns: the created device
     :rtype: dict<TrackingDevices>
@@ -324,7 +324,7 @@ def create_device(scope):
             400,
         )
 
-    schema = TrackingDevicesWriteSchema(unknown=EXCLUDE)
+    schema = TrackingDeviceWriteSchema(unknown=EXCLUDE)
     try:
         device = schema.load(data)
     except ValidationError as e:
@@ -354,7 +354,7 @@ def update_device(id_tracking_device, scope):
 
     .. :quickref: Devices;
 
-    Expects a JSON body matching ``TrackingDevicesWriteSchema``.
+    Expects a JSON body matching ``TrackingDeviceWriteSchema``.
 
     :param id_tracking_device: the id_tracking_device
     :type id_tracking_device: int
@@ -384,7 +384,7 @@ def update_device(id_tracking_device, scope):
             403,
         )
 
-    schema = TrackingDevicesWriteSchema(unknown=EXCLUDE)
+    schema = TrackingDeviceWriteSchema(unknown=EXCLUDE)
     try:
         device = schema.load(data, instance=device)
     except ValidationError as e:

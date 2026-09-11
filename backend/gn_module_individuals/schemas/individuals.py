@@ -1,4 +1,4 @@
-from marshmallow import fields, validates, validates_schema, ValidationError
+from marshmallow import fields, validates
 from utils_flask_sqla.schema import SmartRelationshipsMixin
 from utils_flask_sqla_geo.schema import GeoAlchemyAutoSchema, GeoModelConverter, GeometryField
 from datetime import datetime
@@ -15,16 +15,16 @@ from geonature.core.gn_monitoring.models import TIndividuals
 from geonature.core.gn_commons.models import TAdditionalFields
 
 from .. import MODULE_CODE
-from ..models import TrackingDevices, IndividualDeployments
+from .deployments import DeploymentSchema
 from .utils import get_label, is_nomenclature_of_type
 from ..utils.errors import APIError, ApiErrorCode
 
 
-class IndividualsMapConverter(NomenclaturesConverter, GeoModelConverter):
+class IndividualMapConverter(NomenclaturesConverter, GeoModelConverter):
     pass
 
 
-class IndividualsMapSchema(SmartRelationshipsMixin, GeoAlchemyAutoSchema):
+class IndividualMapSchema(SmartRelationshipsMixin, GeoAlchemyAutoSchema):
     class Meta:
         model = TIndividuals
         include_fk = False
@@ -32,7 +32,7 @@ class IndividualsMapSchema(SmartRelationshipsMixin, GeoAlchemyAutoSchema):
         sqla_session = db.session
         feature_id = "id_individual"
         feature_geometry = "geom"
-        model_converter = IndividualsMapConverter
+        model_converter = IndividualMapConverter
 
     geom = GeometryField(metadata={"exclude": True}, dump_only=True)
     taxref_nom_vern = fields.Method("get_taxref_nom_vern", dump_only=True)
@@ -53,7 +53,7 @@ class IndividualsMapSchema(SmartRelationshipsMixin, GeoAlchemyAutoSchema):
         return obj.last_obs_observers
 
 
-class IndividualsBaseSchema(CruvedSchemaMixin, SmartRelationshipsMixin, ma.SQLAlchemyAutoSchema):
+class IndividualBaseSchema(CruvedSchemaMixin, SmartRelationshipsMixin, ma.SQLAlchemyAutoSchema):
     """Raw columns genuinely shared by List and Detail. No relationships exposed,
     no computed field specific to either subclass."""
 
@@ -75,10 +75,10 @@ class IndividualsBaseSchema(CruvedSchemaMixin, SmartRelationshipsMixin, ma.SQLAl
     id_digitiser = fields.Integer(dump_only=True)
 
 
-class IndividualsListSchema(IndividualsBaseSchema):
+class IndividualListSchema(IndividualBaseSchema):
     """Adds only computed fields on top of the base: no relationships."""
 
-    class Meta(IndividualsBaseSchema.Meta):
+    class Meta(IndividualBaseSchema.Meta):
         # cd_nom is exposed renamed as taxref_cd_nom (below), not under its column name.
         exclude = ("uuid_individual", "cd_nom")
 
@@ -154,10 +154,10 @@ class IndividualsListSchema(IndividualsBaseSchema):
         }
 
 
-class IndividualsDetailSchema(IndividualsBaseSchema):
+class IndividualDetailSchema(IndividualBaseSchema):
     """All of the model's relationships, in addition to the base fields."""
 
-    class Meta(IndividualsBaseSchema.Meta):
+    class Meta(IndividualBaseSchema.Meta):
         # id_digitiser is replaced by the nested digitiser object (below).
         exclude = ("id_digitiser",)
 
@@ -196,12 +196,10 @@ class IndividualsDetailSchema(IndividualsBaseSchema):
             obj.deployments, key=lambda d: d.install_date or datetime.min, reverse=True
         )
         # individual_name is redundant here: we are already on that individual's page.
-        return IndividualsDeploymentsSchema(many=True, exclude=("individual_name",)).dump(
-            deployments
-        )
+        return DeploymentSchema(many=True, exclude=("individual_name",)).dump(deployments)
 
 
-class IndividualsWriteSchema(IndividualsBaseSchema):
+class IndividualWriteSchema(IndividualBaseSchema):
     """Used to create/update an individual. id_digitiser is always set by the
     route from the current user, regardless of what is submitted here."""
 
@@ -209,7 +207,7 @@ class IndividualsWriteSchema(IndividualsBaseSchema):
     __object_code__ = "INDIVIDUALS"
 
     uuid_individual = fields.UUID(dump_only=True)
-    # See IndividualsDetailSchema for why this can't be named `deployments`.
+    # See IndividualDetailSchema for why this can't be named `deployments`.
     deployments_list = fields.Method("get_deployments", dump_only=True, data_key="deployments")
 
     # Serialization
@@ -217,9 +215,7 @@ class IndividualsWriteSchema(IndividualsBaseSchema):
     def get_deployments(self, obj):
         deployments = sorted(obj.deployments, key=lambda d: d.install_date, reverse=True)
         # individual_name is redundant here: we are already on that individual's page.
-        return IndividualsDeploymentsSchema(many=True, exclude=("individual_name",)).dump(
-            deployments
-        )
+        return DeploymentSchema(many=True, exclude=("individual_name",)).dump(deployments)
 
     # Validators
 
@@ -285,119 +281,3 @@ class IndividualsWriteSchema(IndividualsBaseSchema):
                 400,
             )
         return value
-
-
-class IndividualsDeploymentsSchema(SmartRelationshipsMixin, ma.SQLAlchemyAutoSchema):
-    class Meta:
-        model = IndividualDeployments
-        include_fk = True
-        load_instance = True
-        sqla_session = db.session
-        include_relationships = True
-        model_converter = NomenclaturesConverter
-        feature_id = "id_deployment"
-
-    id_deployment = ma.auto_field(dump_only=True)
-    install_date = fields.DateTime(format="%Y-%m-%d", dump_only=True)
-    removal_date = fields.DateTime(format="%Y-%m-%d", dump_only=True)
-    meta_create_date = fields.Date(format="%Y-%m-%d", dump_only=True)
-    meta_update_date = fields.Date(format="%Y-%m-%d", dump_only=True)
-
-    # nomenclature_deployment_type/location are Nested by default (auto-generated by
-    # NomenclaturesConverter, SmartRelationshipsMixin excludes them). Include them via
-    # only=[*[f"+{n}" for n in IndividualDeployments.__nomenclatures__]] when instantiating.
-    individual_name = fields.Method("get_individual_name", dump_only=True)
-    tracking_device_info = fields.Method("get_tracking_device", dump_only=True)
-    digitiser_name = fields.Method("get_digitiser", dump_only=True)
-    deployment_type_name = fields.Method("get_deployment_type_name", dump_only=True)
-    deployment_location_name = fields.Method("get_deployment_location_name", dump_only=True)
-
-    __module_code__ = MODULE_CODE
-
-    # Validators
-
-    @validates("id_individual")
-    def validate_individual(self, value, **kwargs):
-        if db.session.get(TIndividuals, value) is None:
-            raise ValidationError(f"The individual {value} does not exist.")
-        return value
-
-    @validates("id_tracking_device")
-    def validate_tracking_device(self, value, **kwargs):
-        if value is None:
-            return value
-        if db.session.get(TrackingDevices, value) is None:
-            raise ValidationError(f"The tracking device {value} does not exist.")
-        return value
-
-    @validates("id_nomenclature_deployment_type")
-    def validate_nomenclature_deployment_type(self, value, **kwargs):
-        nomenclature = db.session.get(TNomenclatures, value)
-        if nomenclature is None:
-            raise ValidationError(f"The nomenclature {value} (deployment type) does not exist.")
-        if not is_nomenclature_of_type(nomenclature, "TYPE_MARQUAGE"):
-            raise ValidationError(
-                f"The nomenclature {value} is not of the expected type (TYPE_MARQUAGE)."
-            )
-        return value
-
-    @validates("id_nomenclature_deployment_location")
-    def validate_nomenclature_deployment_location(self, value, **kwargs):
-        nomenclature = db.session.get(TNomenclatures, value)
-        if nomenclature is None:
-            raise ValidationError(
-                f"The nomenclature {value} (deployment location) does not exist."
-            )
-        if not is_nomenclature_of_type(nomenclature, "LOC_MARQUAGE"):
-            raise ValidationError(
-                f"The nomenclature {value} is not of the expected type (LOC_MARQUAGE)."
-            )
-        return value
-
-    @validates_schema
-    def validate_dates(self, data, **kwargs):
-        """removal_date must be after install_date when both are present."""
-        install = data.get("install_date")
-        removal = data.get("removal_date")
-        if install and removal and removal <= install:
-            raise ValidationError(
-                {"removal_date": ["removal date must be posterior to install date."]}
-            )
-
-    # Serialization
-
-    def get_individual_name(self, obj):
-        if obj.individual:
-            name = obj.individual.individual_name
-            if obj.individual.taxon and obj.individual.taxon.nom_vern:
-                return f"{name} ({obj.individual.taxon.nom_vern})"
-            return name
-        return None
-
-    def get_tracking_device(self, obj):
-        if obj.tracking_device:
-            return obj.tracking_device.device_label
-        return None
-
-    def get_digitiser(self, obj):
-        if obj.digitiser:
-            return f"{obj.digitiser.prenom_role} {obj.digitiser.nom_role}"
-        return None
-
-    def get_deployment_type_name(self, obj):
-        return get_label(obj.nomenclature_deployment_type)
-
-    def get_deployment_location_name(self, obj):
-        return get_label(obj.nomenclature_deployment_location)
-
-
-class IndividualsDeploymentsWriteSchema(IndividualsDeploymentsSchema):
-    """Used to create/update a deployment under an individual's PUT"""
-
-    __module_code__ = MODULE_CODE
-
-    id_individual = fields.Integer(dump_only=True)
-    id_digitiser = fields.Integer(dump_only=True)
-    # Loadable here: the base schema marks them dump_only for read use.
-    install_date = fields.DateTime(format="%Y-%m-%d")
-    removal_date = fields.DateTime(format="%Y-%m-%d", allow_none=True, required=False)
