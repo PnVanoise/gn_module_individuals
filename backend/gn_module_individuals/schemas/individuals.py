@@ -319,7 +319,7 @@ class IndividualsDeploymentsSchema(SmartRelationshipsMixin, ma.SQLAlchemyAutoSch
     @validates("id_individual")
     def validate_individual(self, value, **kwargs):
         if db.session.get(TIndividuals, value) is None:
-            raise ValidationError(f"L'individu {value} n'existe pas.")
+            raise ValidationError(f"The individual {value} does not exist.")
         return value
 
     @validates("id_tracking_device")
@@ -327,17 +327,17 @@ class IndividualsDeploymentsSchema(SmartRelationshipsMixin, ma.SQLAlchemyAutoSch
         if value is None:
             return value
         if db.session.get(TrackingDevices, value) is None:
-            raise ValidationError(f"Le dispositif de suivi {value} n'existe pas.")
+            raise ValidationError(f"The tracking device {value} does not exist.")
         return value
 
     @validates("id_nomenclature_deployment_type")
     def validate_nomenclature_deployment_type(self, value, **kwargs):
         nomenclature = db.session.get(TNomenclatures, value)
         if nomenclature is None:
-            raise ValidationError(f"La nomenclature {value} (type de déploiement) n'existe pas.")
+            raise ValidationError(f"The nomenclature {value} (deployment type) does not exist.")
         if not is_nomenclature_of_type(nomenclature, "TYPE_MARQUAGE"):
             raise ValidationError(
-                f"La nomenclature {value} n'est pas du type attendu (TYPE_MARQUAGE)."
+                f"The nomenclature {value} is not of the expected type (TYPE_MARQUAGE)."
             )
         return value
 
@@ -346,11 +346,11 @@ class IndividualsDeploymentsSchema(SmartRelationshipsMixin, ma.SQLAlchemyAutoSch
         nomenclature = db.session.get(TNomenclatures, value)
         if nomenclature is None:
             raise ValidationError(
-                f"La nomenclature {value} (localisation du déploiement) n'existe pas."
+                f"The nomenclature {value} (deployment location) does not exist."
             )
         if not is_nomenclature_of_type(nomenclature, "LOC_MARQUAGE"):
             raise ValidationError(
-                f"La nomenclature {value} n'est pas du type attendu (LOC_MARQUAGE)."
+                f"The nomenclature {value} is not of the expected type (LOC_MARQUAGE)."
             )
         return value
 
@@ -361,7 +361,7 @@ class IndividualsDeploymentsSchema(SmartRelationshipsMixin, ma.SQLAlchemyAutoSch
         removal = data.get("removal_date")
         if install and removal and removal <= install:
             raise ValidationError(
-                {"removal_date": ["removal_date doit être postérieure à install_date."]}
+                {"removal_date": ["removal date must be posterior to install date."]}
             )
 
     # Serialization
