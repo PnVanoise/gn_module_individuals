@@ -8,7 +8,7 @@ from geonature.tests.utils import get_id_nomenclature
 from geonature.utils.env import db
 from pypnnomenclature.models import TNomenclatures
 
-from gn_module_individuals.models import IndividualDeployments
+from gn_module_individuals.models import IndividualDeployments, TrackingDevices
 from gn_module_individuals.schemas import (
     TrackingDeviceBaseSchema,
     TrackingDeviceDetailSchema,
@@ -72,6 +72,63 @@ class TestTrackingDeviceDetailSchema:
 
 
 @pytest.mark.usefixtures("temporary_transaction")
+class TestTrackingDevicesPermission:
+
+    # --- has_instance_permission scope 2 -----------------------
+
+    def test_has_instance_permission_scope_2_same_organism_grants_access(
+        self, app, users, devices
+    ):
+        # associate_user shares admin_user's organism (devices[0]'s digitiser/referer)
+        # but is neither its digitiser nor its referer.
+        g.current_user = users["associate_user"]
+        assert devices[0].has_instance_permission(scope=2) is True
+
+    def test_has_instance_permission_scope_2_without_organism_denies_access(
+        self, app, users, devices
+    ):
+        # stranger_user has no organism: the scope-2 organism check never runs.
+        g.current_user = users["stranger_user"]
+        assert not devices[0].has_instance_permission(scope=2)
+
+    # --- filter_by_scope -----------------------------------------
+
+    def test_filter_by_scope_0_returns_no_devices(self, app, users, devices):
+        query = TrackingDevices.filter_by_scope(
+            select(TrackingDevices), scope=0, user=users["noright_user"]
+        )
+        assert db.session.execute(query).scalars().all() == []
+
+    def test_filter_by_scope_1_returns_only_own_devices(self, app, users, devices):
+        query = TrackingDevices.filter_by_scope(
+            select(TrackingDevices), scope=1, user=users["self_user"]
+        )
+        result_ids = {d.id_tracking_device for d in db.session.execute(query).scalars()}
+        # self_user is digitiser or referer on devices[1], [2] and [3], but not [0].
+        assert result_ids == {
+            devices[1].id_tracking_device,
+            devices[2].id_tracking_device,
+            devices[3].id_tracking_device,
+        }
+
+    def test_filter_by_scope_2_extends_to_colleagues(self, app, users, devices):
+        # associate_user shares the fixture devices' organism but digitised none of them.
+        query = TrackingDevices.filter_by_scope(
+            select(TrackingDevices), scope=2, user=users["associate_user"]
+        )
+        result_ids = {d.id_tracking_device for d in db.session.execute(query).scalars()}
+        assert result_ids == {d.id_tracking_device for d in devices}
+
+    def test_filter_by_scope_2_without_organism_behaves_like_scope_1(self, app, users, devices):
+        # stranger_user has no organism, and is neither digitiser nor referer of any device.
+        query = TrackingDevices.filter_by_scope(
+            select(TrackingDevices), scope=2, user=users["stranger_user"]
+        )
+        result = db.session.execute(query).scalars().all()
+        assert result == []
+
+
+@pytest.mark.usefixtures("temporary_transaction")
 class TestDeploymentSchema:
 
     # --- validate_individual --------------------------------
@@ -81,7 +138,7 @@ class TestDeploymentSchema:
         assert result == individual.id_individual
 
     def test_validate_individual_rejects_unknown_id(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_individual(-1)
 
     # --- validate_tracking_device  ---------------------------
@@ -94,13 +151,13 @@ class TestDeploymentSchema:
         assert result == device.id_tracking_device
 
     def test_validate_tracking_device_rejects_unknown_id(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_tracking_device(-1)
 
     # --- validate_nomenclature_deployment_type  --------------
 
     def test_validate_nomenclature_deployment_type_rejects_none(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_nomenclature_deployment_type(None)
 
     def test_validate_nomenclature_deployment_type_accepts_valid_id(self, app):
@@ -109,13 +166,13 @@ class TestDeploymentSchema:
         assert result == valid_id
 
     def test_validate_nomenclature_deployment_type_rejects_unknown_id(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_nomenclature_deployment_type(-1)
 
     # --- validate_nomenclature_deployment_location ----------
 
     def test_validate_nomenclature_deployment_location_rejects_none(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_nomenclature_deployment_location(None)
 
     def test_validate_nomenclature_deployment_location_accepts_valid_id(self, app):
@@ -124,7 +181,7 @@ class TestDeploymentSchema:
         assert result == valid_id
 
     def test_validate_nomenclature_deployment_location_rejects_unknown_id(self, app):
-        with pytest.raises(ValidationError, match="n'existe pas"):
+        with pytest.raises(ValidationError, match="does not exist"):
             DeploymentSchema().validate_nomenclature_deployment_location(-1)
 
     # --- validate_dates -------------------------------------
@@ -412,9 +469,10 @@ class TestTIndividualsPermission:
         g.current_user = users["admin_user"]
         assert individuals[0].has_instance_permission(scope=2) is True
 
-    def test_scope_2_grants_access_when_organisme_is_none(self, app, users, individuals):
-        # In test fixtures, id_organisme is None for all users.
-        # has_instance_permission checks `current_user.id_organisme in organism_actors`,
-        # i.e. `None in [None]` → True: access granted even when digitiser differs.
+    def test_scope_2_grants_access_when_same_organism(self, app, users, individuals):
+        # self_user and admin_user share the same organism in the test fixtures
+        # (individuals[0]'s digitiser). has_instance_permission checks
+        # `current_user.id_organisme in organism_actors`: access granted even
+        # though self_user isn't the digitiser.
         g.current_user = users["self_user"]
         assert individuals[0].has_instance_permission(scope=2) is True

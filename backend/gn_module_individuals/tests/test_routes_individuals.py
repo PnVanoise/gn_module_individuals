@@ -347,7 +347,14 @@ class TestListIndividuals:
             url_for("individuals.list_individuals", prop="individual_name", dir="desc")
         )
         assert r.status_code == 200
-        names = [item["individual_name"] for item in r.get_json()["items"]]
+        # Scoped to the fixture's individuals: the table may hold other rows whose
+        # relative order under the database's collation Python's sorted() can't replicate.
+        fixture_ids = {ind.id_individual for ind in individuals}
+        names = [
+            item["individual_name"]
+            for item in r.get_json()["items"]
+            if item["id_individual"] in fixture_ids
+        ]
         assert names == sorted(names, reverse=True)
 
     def test_sort_by_last_observation_date_desc(self, users, source, individuals):
