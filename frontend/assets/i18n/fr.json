@@ -27,7 +27,6 @@
                 "provider_name": "Nom du fournisseur",
                 "provider_device_id": "Identifiant/n° série",
                 "id_referer": "Référent",
-                "comment": "En dire plus ...",
                 "device_label" : "Dispositif de suivi"
             },
             "Filters":{

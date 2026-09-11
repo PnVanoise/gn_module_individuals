@@ -1,6 +1,6 @@
 <ng-template #formTemplate>
   <div class="col-12 padding-sm">
-    <!-- id_nomenclature_deployment_type -->
+    <!-- NOMENCLATURE : id_nomenclature_deployment_type -->
     <pnx-nomenclature
       class="form-group"
       [label]="'Individuals.Deployments.Fields.deployment_type_name' | translate"
@@ -9,7 +9,7 @@
       ($currentCdNomenclature)="toogleTrakingDevice($event)"
     ></pnx-nomenclature>
 
-    <!-- id_nomenclature_deployment_location -->
+    <!-- NOMENCLATURE : id_nomenclature_deployment_location -->
     <pnx-nomenclature
       class="form-group"
       [label]="'Individuals.Deployments.Fields.deployment_location_name' | translate"
@@ -17,7 +17,7 @@
       [codeNomenclatureType]="'LOC_MARQUAGE'"
     ></pnx-nomenclature>
 
-    <!-- id_tracking_device -->
+    <!-- AUTOCOMPLETE : id_tracking_device -->
     <pnx-autocomplete
       *ngIf="showDevice"
       [apiEndPoint]="devicesApiEndPoint"
@@ -31,24 +31,33 @@
       class="'w-50'"
     ></pnx-autocomplete>
 
-    <!-- marking_code -->
-    <gn-individuals-input-text
-      [label]="'Individuals.Deployments.Fields.marking_code' | translate"
-      [containerClass]="'w-50'"
-      [parentFormControl]="form.get('marking_code')"
-      [maxLength]="formConstraints['marking_code'].maxLength"
-      [errorKey]="'Individuals.Errors.' + [formConstraints['marking_code'].help] | translate"
-      [placeHolder]="'Individuals.PlaceHolder.writeText' | translate"
-    ></gn-individuals-input-text>
+    <!-- INPUT TEXT : marking_code -->
+    <div class="form-group w-50">
+      <label class="small">{{ 'Individuals.Deployments.Fields.marking_code' | translate }}</label>
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        [formControl]="$any(form.get('marking_code'))"
+        [maxlength]="formConstraints['marking_code'].maxLength"
+        [placeholder]="'Individuals.PlaceHolder.writeText' | translate"
+        [class.is-invalid]="form.get('marking_code')?.invalid"
+      />
+      <small
+        class="text-danger d-block d-flex justify-content-end"
+        *ngIf="form.get('marking_code')?.errors?.['pattern']"
+      >
+        {{ 'Individuals.Errors.' + [formConstraints['marking_code'].help] | translate }}
+      </small>
+    </div>
 
-    <!-- install_date -->
+    <!-- INPUT DATE : install_date -->
     <div class="form-group">
       <small>{{ 'Individuals.Deployments.Fields.install_date' | translate }}</small>
       <input
         class="form-control form-control-sm"
         type="date"
         [formControl]="$any(form.get('install_date'))"
-        [class.input-placeholder]="!form.get('install_date')?.value"
+        [placeholder]="!form.get('install_date')?.value"
         [class.is-invalid]="
           form.get('install_date')?.invalid ||
           form.hasError('invalidStartDate')
@@ -62,7 +71,7 @@
       </small>
     </div>
 
-    <!-- removal_date -->
+    <!-- INPUT DATE : removal_date -->
     <div class="form-group">
       <small>{{ 'Individuals.Deployments.Fields.removal_date' | translate }}</small>
       <input
@@ -83,15 +92,27 @@
       </small>
     </div>
 
-    <!-- comment -->
-    <gn-individuals-textarea
-      [label]="'Individuals.Deployments.Fields.comment' | translate"
-      [containerClass]="'w-100'"
-      [parentFormControl]="form.get('comment')"
-      [maxLength]="formConstraints['comment'].maxLength"
-      [errorKey]="'Individuals.Errors.' + [formConstraints['comment'].help] | translate"
-      [placeHolder]="'Individuals.PlaceHolder.writeMore' | translate"
-    ></gn-individuals-textarea>
+    <!-- TEXTAREA : comment -->
+    <div class="form-group w-100">
+      <label class="small">{{ 'Individuals.Deployments.Fields.comment' | translate }}</label>
+      <textarea
+        type="textarea"
+        class="form-control form-control-sm"
+        [formControl]="$any(form.get('comment'))"
+        [maxlength]="formConstraints['comment'].maxLength"
+        [placeholder]="'Individuals.PlaceHolder.writeMore' | translate"
+        [class.is-invalid]="form.get('comment')?.invalid"
+      ></textarea>
+      <small class="d-flex justify-content-end text-muted">
+        {{ $any(form.get('comment'))?.value?.length || 0 }}/{{ formConstraints['comment'].maxLength }}
+      </small>
+      <small
+          class="text-danger d-block d-flex justify-content-end"
+          *ngIf="form.get('comment')?.errors?.['pattern']"
+        >
+          {{ 'Individuals.Errors.' + [formConstraints['comment'].help] | translate }}
+      </small>
+    </div>
   </div>
 </ng-template>
 
@@ -100,7 +121,7 @@
   [formTitle]="'Individuals.Deployments.Titles.Add' | translate"
   [formTemplate]="formTemplate"
   [formAction]="formAction"
-  [canSave]="form.valid"
+  [allowedToSave]="{id:0, access:form.valid, message: form.valid ? true : 'Individuals.Errors.FormInvalid' | translate}"
   (save)="onSave()"
   (cancel)="onCancel()"
 ></gn-individuals-form>
@@ -110,7 +131,7 @@
     [formTitle]="'Individuals.Deployments.Titles.Edit' | translate: { id: datatable.id_deployment }"
     [formTemplate]="formTemplate"
     [formAction]="formAction"
-    [canSave]="form.valid && form.dirty"
+    [allowedToSave]="{id:this.datatable.id_deployment, access:form.valid && form.dirty, message: form.dirty ? (form.valid ? null : 'Individuals.Errors.FormInvalid' | translate) : 'Individuals.Errors.FormNotModified' | translate}"
     (save)="onSave()"
     (cancel)="onCancel()"
   ></gn-individuals-form>

@@ -1,6 +1,6 @@
 <ng-template #formTemplate>
   <div class="col-6 padding-sm">
-    <!-- id_nomenclature_device_type -->
+    <!-- NOMENCLATURE : id_nomenclature_device_type -->
     <pnx-nomenclature
       class="form-group w-50"
       [label]="'Individuals.Devices.Fields.id_nomenclature_device_type' | translate"
@@ -8,27 +8,45 @@
       [codeNomenclatureType]="'TYPE_DISPO_SUIVI'"
     ></pnx-nomenclature>
 
-    <!-- provider_name -->
-    <gn-individuals-input-text
-      [label]="'Individuals.Devices.Fields.provider_name' | translate"
-      [containerClass]="'w-50'"
-      [parentFormControl]="form.get('provider_name')"
-      [maxLength]="formConstraints['provider_name'].maxLength"
-      [errorKey]="'Individuals.Errors.' + [formConstraints['provider_name'].help] | translate"
-      [placeHolder]="'Individuals.Devices.PlaceHolder.provider_name' | translate"
-    ></gn-individuals-input-text>
+    <!-- INPUT TEXT : provider_name -->
+    <div class="form-group w-50">
+      <label class="small">{{ 'Individuals.Devices.Fields.provider_name' | translate }}</label>
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        [formControl]="$any(form.get('provider_name'))"
+        [maxlength]="formConstraints['provider_name'].maxLength"
+        [placeholder]="'Individuals.Devices.PlaceHolder.provider_name' | translate"
+        [class.is-invalid]="form.get('provider_name')?.invalid"
+      />
+      <small
+        class="text-danger d-block d-flex justify-content-end"
+        *ngIf="form.get('provider_name')?.errors?.['pattern']"
+      >
+        {{ 'Individuals.Errors.' + [formConstraints['provider_name'].help] | translate }}
+      </small>
+    </div>
 
-    <!-- provider_device_id -->
-    <gn-individuals-input-text
-      [label]="'Individuals.Devices.Fields.provider_device_id' | translate"
-      [containerClass]="'w-50'"
-      [parentFormControl]="form.get('provider_device_id')"
-      [maxLength]="formConstraints['provider_device_id'].maxLength"
-      [errorKey]="'Individuals.Errors.' + [formConstraints['provider_device_id'].help] | translate"
-      [placeHolder]="'Individuals.Devices.PlaceHolder.provider_device_id' | translate"
-    ></gn-individuals-input-text>
+    <!-- INPUT TEXT : provider_device_id -->
+    <div class="form-group w-50">
+      <label class="small">{{ 'Individuals.Devices.Fields.provider_device_id' | translate }}</label>
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        [formControl]="$any(form.get('provider_device_id'))"
+        [maxlength]="formConstraints['provider_device_id'].maxLength"
+        [placeholder]="'Individuals.Devices.PlaceHolder.provider_device_id' | translate"
+        [class.is-invalid]="form.get('provider_device_id')?.invalid"
+      />
+      <small
+        class="text-danger d-block d-flex justify-content-end"
+        *ngIf="form.get('provider_device_id')?.errors?.['pattern']"
+      >
+        {{ 'Individuals.Errors.' + [formConstraints['provider_device_id'].help] | translate }}
+      </small>
+    </div>
 
-    <!-- id_referer -->
+    <!-- OBSERVERS : id_referer -->
     <pnx-observers
       class="form-group"
       [label]="'Individuals.Devices.Fields.id_referer' | translate"
@@ -37,14 +55,27 @@
       [placeHolder]="'Individuals.Devices.PlaceHolder.id_referer' | translate"
     ></pnx-observers>
 
-    <!-- comment -->
-    <gn-individuals-textarea
-      [label]="'Individuals.Devices.Fields.comment' | translate"
-      [parentFormControl]="form.get('comment')"
-      [maxLength]="formConstraints['comment'].maxLength"
-      [errorKey]="'Individuals.Errors.' + [formConstraints['comment'].help] | translate"
-      [placeHolder]="'Individuals.Devices.PlaceHolder.comment' | translate"
-    ></gn-individuals-textarea>
+    <!-- TEXTAREA : comment -->
+    <div class="form-group w-100">
+      <label class="small">{{ 'Individuals.Devices.Fields.comment' | translate }}</label>
+      <textarea
+        type="textarea"
+        class="form-control form-control-sm"
+        [formControl]="$any(form.get('comment'))"
+        [maxlength]="formConstraints['comment'].maxLength"
+        [placeholder]="'Individuals.PlaceHolder.writeMore' | translate"
+        [class.is-invalid]="form.get('comment')?.invalid"
+      ></textarea>
+      <small class="d-flex justify-content-end text-muted">
+        {{ $any(form.get('comment'))?.value?.length || 0 }}/{{ formConstraints['comment'].maxLength }}
+      </small>
+      <small
+          class="text-danger d-block d-flex justify-content-end"
+          *ngIf="form.get('comment')?.errors?.['pattern']"
+        >
+          {{ 'Individuals.Errors.' + [formConstraints['comment'].help] | translate }}
+      </small>
+    </div>
   </div>
 </ng-template>
 

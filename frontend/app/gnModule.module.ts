@@ -20,9 +20,6 @@ import { ListComponent } from './components/list/list.component';
 import { InfoComponent } from './components/info/info.component';
 import { ModalComponent } from './components/modal/modal.component';
 import { FormComponent } from './components/form/form.component';
-import { InputTextComponent } from './components/input/input-text.component';
-import { TextareaComponent } from './components/input/textarea.component';
-import { InputRadioComponent } from './components/input/input-radio.component';
 
 import { DevicesService } from './services/devices.service';
 import { DevicesResolver, DeviceResolver } from './resolvers/devices.resolver';
@@ -55,9 +52,6 @@ export function createTranslateLoader(http: HttpClient, config: cs) {
     MapListComponent,
     InfoComponent,
     FormComponent,
-    InputTextComponent,
-    TextareaComponent,
-    InputRadioComponent,
     ModalComponent,
     DevicesListComponent,
     DevicesFiltersComponent,

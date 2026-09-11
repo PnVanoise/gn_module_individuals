@@ -37,8 +37,8 @@ export class IndividualsInfoComponent implements OnInit {
   public availableDeploymentsColumnsParams = DEPLOYMENT_MODEL;
   public displayedDeploymentsColumnsParams: string[] = this._config.INDIVIDUALS?.INDIVIDUALS?.DEPLOYMENT_LIST_COLUMNS ?? [];
   public rowHeight: number = DATATABLE_CONFIG.TABLE_ROW_HEIGHT;
-  public allowedToDelete!: AccessResult;
-  public allowedToEdit!: AccessResult;
+  public allowedToDelete: AccessResult = {id: 0, access: false, message: null};
+  public allowedToEdit: AccessResult = {id: 0, access: false, message: null};
   public allowedToChangeDeployments: Record<number, AccessResult> = {};
   public defaultLang!: string;
   private _individualId!: number;
@@ -105,9 +105,13 @@ export class IndividualsInfoComponent implements OnInit {
     modalRef.componentInstance.bodyComponent = DeploymentsFormComponent;
     modalRef.componentInstance.bodyComponentData = deployment;
     modalRef.componentInstance.validateButtonType = null;
-    modalRef.result.then(() => {
-      this._loadDeploymentData();
-    });
+    modalRef.result
+      .then(() => {
+        this._loadDeploymentData();
+      })
+      .catch(() => {
+        // Modal is closed
+      });
   }
 
   deleteDeployment(id_deployment: number) {

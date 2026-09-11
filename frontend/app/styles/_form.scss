@@ -36,11 +36,13 @@ pnx-autocomplete small {
   margin-bottom: 0.5rem;
 }
 
-// .form-group small.text-danger {
-//   width: 100%;
-//   max-width: 100%;
-//   overflow-wrap: break-word;
-// }
+/* To delete margin if there's 2 following <small> */
+.form-group textarea + small:has(+ small) {
+    margin-bottom: 0 !important;
+}
+.form-group textarea + small + small {
+  margin-top: 0 !important;;
+}
 
 /* 
 To homogenize ng-select components (pnx-observers, pnx-nomenclature) 
